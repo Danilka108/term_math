@@ -1,0 +1,15 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "frontend"
+path = "src/lib.rs"
+
+[dependencies]
+lexer = { path = "lexer" }
+parser = { path = "parser" }
+validator = { path = "validator" }
+error = { path = "error" }
+ast = { path = "ast" }

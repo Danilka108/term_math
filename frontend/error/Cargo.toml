@@ -1,0 +1,13 @@
+[package]
+name = "error"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "error"
+path = "src/lib.rs"
+
+[dependencies]
+ast = { path = "../ast" }
+colored = "2"
+termsize = "0.1.*"

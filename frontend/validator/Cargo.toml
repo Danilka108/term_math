@@ -1,0 +1,13 @@
+[package]
+name = "validator"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "validator"
+path = "src/lib.rs"
+
+[dependencies]
+ast = { path = "../ast" }
+lexer = { path = "../lexer" }
+error = { path = "../error" }

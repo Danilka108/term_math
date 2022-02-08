@@ -1,0 +1,12 @@
+pub(crate) const ERR__INVALID_LEFT_OPERAND: &str = "Invalid left operand";
+pub(crate) const ERR__INVALID_RIGHT_OPERAND: &str = "Invalid right operand";
+pub(crate) const ERR__MISSING_OPERATOR_TO_THE_LEFT_OF_DELIM: &str = "Missing operator to the left of delimiter";
+pub(crate) const ERR__MISSING_OPERATOR_TO_THE_RIGHT_OF_DELIM: &str = "Missing operator to the right of delimiter";
+pub(crate) const ERR__MISSING_OPEN_DELIM: &str = "Missing open delimiter";
+pub(crate) const ERR__MISSING_CLOSE_DELIM: &str = "Missing close delimiter";
+pub(crate) const ERR__EMPTY_DELIM_BLOCK: &str = "Empty delimiter block";
+pub(crate) const ERR__MISSING_FUNC_ARGS_BLOCK: &str = "Missing function arguments block";
+pub(crate) const ERR__INVALID_DELIM_TYPE_OF_FUNC_ARGS_BLOCK: &str = "Invalid delimiters type of function arguments block";
+pub(crate) const ERR__MISSING_FUNC_ARG: &str = "Missing function argument";
+pub(crate) const ERR__MISSING_FUNC_IDENT: &str = "Missing function identifier";
+pub(crate) const ERR__EMPTY_EXPR: &str = "Empty expression";
