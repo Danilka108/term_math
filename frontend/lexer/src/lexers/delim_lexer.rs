@@ -13,6 +13,7 @@ impl<'s> Lexer<'s> {
             _ => None,
         };
 
+
         self.lex_char(identify)
     }
 }

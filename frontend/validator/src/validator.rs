@@ -1,4 +1,4 @@
-use ast::token::{DelimToken, Token};
+use ast::token::{DelimToken, Token, TokenKind};
 use error::FrontendError;
 use lexer::TokenStream;
 
@@ -20,6 +20,27 @@ impl Validator {
         Self {
             token_stream: token_stream.clone(),
             delim_stack: Vec::new(),
+        }
+    }
+    
+    pub(crate) fn get_curr_token_kind(&self) -> Option<TokenKind> {
+        match self.token_stream.curr() {
+            Some(token) => Some(token.kind()),
+            _ => None
+        }
+    }
+
+    pub(crate) fn get_next_token_kind(&self) -> Option<TokenKind> {
+        match self.token_stream.next() {
+            Some(token) => Some(token.kind()),
+            _ => None
+        }
+    }
+
+    pub(crate) fn get_prev_token_kind(&self) -> Option<TokenKind> {
+        match self.token_stream.prev() {
+            Some(token) => Some(token.kind()),
+            _ => None
         }
     }
 

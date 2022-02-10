@@ -32,39 +32,29 @@ impl Validator {
     }
 
     fn validate_prev_arg_to_missing(&self, curr_token: &Token) -> Result<(), FrontendError> {
-        match self.token_stream.prev() {
-            Some(token) => match token.kind() {
-                TokenKind::OpenDelim(_) | TokenKind::Literal(LiteralToken::Comma) => {
-                    return Err(FrontendError::from_token(
-                        self.token_stream.expr(),
-                        ERR__MISSING_FUNC_ARG,
-                        curr_token,
-                    ))
-                }
-                _ => (),
-            },
-            _ => (),
+        match self.get_prev_token_kind() {
+            Some(TokenKind::OpenDelim(_) | TokenKind::Literal(LiteralToken::Comma)) => (),
+            _ => return Ok(()),
         }
 
-        Ok(())
+        Err(FrontendError::from_token(
+            self.token_stream.expr(),
+            ERR__MISSING_FUNC_ARG,
+            curr_token,
+        ))
     }
 
     fn validate_next_arg_to_missing(&self, curr_token: &Token) -> Result<(), FrontendError> {
-        match self.token_stream.next() {
-            Some(token) => match token.kind() {
-                TokenKind::CloseDelim(_) | TokenKind::Literal(LiteralToken::Comma) => {
-                    return Err(FrontendError::from_token(
-                        self.token_stream.expr(),
-                        ERR__MISSING_FUNC_ARG,
-                        curr_token,
-                    ))
-                }
-                _ => (),
-            },
-            _ => (),
+        match self.get_next_token_kind() {
+            Some(TokenKind::CloseDelim(_) | TokenKind::Literal(LiteralToken::Comma)) => (),
+            _ => return Ok(()),
         }
 
-        Ok(())
+        Err(FrontendError::from_token(
+            self.token_stream.expr(),
+            ERR__MISSING_FUNC_ARG,
+            curr_token,
+        ))
     }
 
     fn validate_ident_to_missing(&self, curr_token: &Token) -> Result<(), FrontendError> {
@@ -83,7 +73,7 @@ impl Validator {
 
     fn validate_delim_type(&self, curr_token: &Token) -> Result<(), FrontendError> {
         match self.delim_stack.last() {
-            Some(element) if !element.kind.is_eq(&DelimToken::Paren) => Err(FrontendError::new(
+            Some(element) if element.is_present_ident && !element.kind.is_eq(&DelimToken::Paren) => Err(FrontendError::new(
                 self.token_stream.expr(),
                 ERR__INVALID_DELIM_TYPE_OF_FUNC_ARGS_BLOCK.to_string(),
                 element.token.span().start(),

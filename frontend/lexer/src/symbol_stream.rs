@@ -1,6 +1,7 @@
 use std::iter::{Enumerate, Peekable};
 use std::str::Chars;
 
+#[derive(Clone, Debug)]
 pub(crate) struct SymbolStream<'c> {
     chars: Peekable<Enumerate<Chars<'c>>>,
     initial_len: usize,

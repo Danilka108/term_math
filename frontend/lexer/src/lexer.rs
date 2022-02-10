@@ -11,6 +11,11 @@ pub struct Lexer<'s> {
     tokens: Vec<Token>,
 }
 
+enum StepRes {
+    Stop,
+    Next,
+}
+
 impl<'s> Lexer<'s> {
     const LEXERS: [fn(&mut Self) -> Option<Token>; 5] = [
         Self::lex_whitespace,
@@ -74,45 +79,41 @@ impl<'s> Lexer<'s> {
         }
     }
 
-    fn push_token(&mut self, token: Option<Token>) {
-        if let Some(token) = token {
-            if let Some((span, _)) = self.combiner.combine() {
-                let error_token =
-                    Token::new(TokenKind::Error(ERR__UNKNOWN_SYMBOLS.to_string()), span);
-                self.tokens.push(error_token);
+    fn push_token(&mut self, token: Token) {
+        if let Some((span, _)) = self.combiner.combine() {
+            let error_token = Token::new(TokenKind::Error(ERR__UNKNOWN_SYMBOLS.to_string()), span);
+            self.tokens.push(error_token);
+        }
+
+        self.tokens.push(token);
+    }
+
+    fn next_step(&mut self) -> StepRes {
+        use StepRes::*;
+
+        for lex in Self::LEXERS {
+            match lex(self) {
+                Some(token) => self.push_token(token),
+                _ => continue,
             }
 
-            self.tokens.push(token);
+            return Next;
         }
+
+        if let Some(token) = self.lex_eof() {
+            self.push_token(token);
+            return Stop;
+        }
+
+        if let (Some(sym), Some(pos)) = (self.symbol_stream.to_next(), self.symbol_stream.pos()) {
+            self.combiner.push(sym, pos);
+        }
+
+        Next
     }
 
     pub fn lex(mut self) -> TokenStream {
-        'l: loop {
-            for lex in Self::LEXERS {
-                let token = lex(&mut self);
-
-                if token.is_none() {
-                    continue;
-                }
-
-                self.push_token(token);
-
-                continue 'l;
-            }
-
-            if self.symbol_stream.is_eof() {
-                let token = self.lex_eof();
-                self.push_token(token);
-
-                break;
-            }
-
-            match (self.symbol_stream.to_next(), self.symbol_stream.pos()) {
-                (Some(sym), Some(pos)) => self.combiner.push(sym, pos),
-                _ => (),
-            }
-        }
-
+        while let StepRes::Next = self.next_step() {}
         TokenStream::new(self.input_expr, self.tokens)
     }
 }

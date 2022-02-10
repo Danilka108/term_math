@@ -12,32 +12,30 @@ impl Validator {
         curr_token: &Token,
         curr_delim_kind: &DelimToken,
     ) -> Result<(), FrontendError> {
-        let validate_to_emptiness = |token: &Token| match self.delim_stack.last() {
-            Some(element) if element.kind.is_eq(&curr_delim_kind) && element.is_present_ident => {
-                Ok(())
-            }
-            _ => {
-                let start = token.span().start();
-                let end = curr_token.span().end();
-
-                Err(FrontendError::new(
-                    self.token_stream.expr(),
-                    ERR__EMPTY_DELIM_BLOCK.to_string(),
-                    start,
-                    end,
-                ))
-            }
+        let prev_token = match self.token_stream.prev() {
+            Some(token) => match token.kind() {
+                TokenKind::OpenDelim(_) => token,
+                _ => return Ok(()),
+            },
+            _ => return Ok(()),
         };
 
-        match self.token_stream.prev() {
-            Some(token) => match token.kind() {
-                TokenKind::OpenDelim(_) => validate_to_emptiness(token)?,
-                _ => (),
-            },
+        match self.delim_stack.last() {
+            Some(element) if element.kind.is_eq(curr_delim_kind) && element.is_present_ident => {
+                return Ok(())
+            }
             _ => (),
         }
 
-        Ok(())
+        let start = prev_token.span().start();
+        let end = curr_token.span().end();
+
+        Err(FrontendError::new(
+            self.token_stream.expr(),
+            ERR__EMPTY_DELIM_BLOCK.to_string(),
+            start,
+            end,
+        ))
     }
 
     fn validate_to_presence_open_delim(
@@ -46,16 +44,18 @@ impl Validator {
         curr_delim_kind: &DelimToken,
     ) -> Result<(), FrontendError> {
         match self.delim_stack.last() {
-            Some(element) if element.kind.is_eq(&curr_delim_kind) => {
+            Some(element) if element.kind.is_eq(curr_delim_kind) => {
                 self.delim_stack.pop();
-                Ok(())
+                return Ok(());
             }
-            _ => Err(FrontendError::from_token(
-                self.token_stream.expr(),
-                ERR__MISSING_OPEN_DELIM,
-                curr_token,
-            )),
+            _ => (),
         }
+
+        Err(FrontendError::from_token(
+            self.token_stream.expr(),
+            ERR__MISSING_OPEN_DELIM,
+            curr_token,
+        ))
     }
 
     fn validate_to_presence_close_delim(&self) -> Result<(), FrontendError> {
@@ -71,58 +71,52 @@ impl Validator {
     }
 
     fn validate_next_token(&self, curr_token: &Token) -> Result<(), FrontendError> {
-        match self.token_stream.next() {
-            Some(token) => match token.kind() {
-                TokenKind::Literal(
-                    LiteralToken::Asterisk
-                    | LiteralToken::Plus
-                    | LiteralToken::Slash
-                    | LiteralToken::Hyphen,
-                )
-                | TokenKind::Eof
-                | TokenKind::CloseDelim(_) => (),
-                _ => {
-                    return Err(FrontendError::from_token(
-                        self.token_stream.expr(),
-                        ERR__MISSING_OPERATOR_TO_THE_RIGHT_OF_DELIM,
-                        curr_token,
-                    ))
-                }
-            },
-            _ => (),
+        if let Some(
+            TokenKind::Eof
+            | TokenKind::CloseDelim(_)
+            | TokenKind::Literal(
+                LiteralToken::Plus
+                | LiteralToken::Hyphen
+                | LiteralToken::Asterisk
+                | LiteralToken::Slash,
+            ),
+        ) = self.get_next_token_kind()
+        {
+            return Ok(());
         }
 
-        Ok(())
+        Err(FrontendError::from_token(
+            self.token_stream.expr(),
+            ERR__MISSING_OPERATOR_TO_THE_RIGHT_OF_DELIM,
+            curr_token,
+        ))
     }
 
     fn validate_prev_token(&self, curr_token: &Token) -> Result<(), FrontendError> {
-        match self.token_stream.prev() {
-            Some(token) => match token.kind() {
-                TokenKind::Literal(
-                    LiteralToken::Asterisk
-                    | LiteralToken::Plus
-                    | LiteralToken::Slash
-                    | LiteralToken::Hyphen,
-                )
-                | TokenKind::Ident(_) => Ok(()),
-                _ => {
-                    return Err(FrontendError::from_token(
-                        self.token_stream.expr(),
-                        ERR__MISSING_OPERATOR_TO_THE_LEFT_OF_DELIM,
-                        curr_token,
-                    ))
-                }
-            },
-            _ => Ok(()),
+        if let None | Some(
+            TokenKind::Ident(_)
+            | TokenKind::OpenDelim(_)
+            | TokenKind::Literal(
+                LiteralToken::Plus
+                | LiteralToken::Hyphen
+                | LiteralToken::Asterisk
+                | LiteralToken::Slash,
+            ),
+        ) = self.get_prev_token_kind()
+        {
+            return Ok(());
         }
+
+        Err(FrontendError::from_token(
+            self.token_stream.expr(),
+            ERR__MISSING_OPERATOR_TO_THE_LEFT_OF_DELIM,
+            curr_token,
+        ))
     }
 
     fn is_present_ident(&self) -> bool {
-        match self.token_stream.prev() {
-            Some(token) => match token.kind() {
-                TokenKind::Ident(_) => true,
-                _ => false,
-            },
+        match self.get_prev_token_kind() {
+            Some(TokenKind::Ident(_)) => true,
             _ => false,
         }
     }
@@ -163,11 +157,8 @@ impl Validator {
     }
 
     fn validate_delim_stack(&self) -> Result<(), FrontendError> {
-        match self.token_stream.curr() {
-            Some(token) => match token.kind() {
-                TokenKind::Eof => (),
-                _ => return Ok(()),
-            },
+        match self.get_curr_token_kind() {
+            Some(TokenKind::Eof) => (),
             _ => return Ok(()),
         }
 
