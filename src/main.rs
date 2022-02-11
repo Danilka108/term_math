@@ -1,7 +1,15 @@
-use frontend::Frontend;
+use frontend::{Frontend, AstNode, FrontendError};
+
+fn build_ast_from_user_input() -> Result<AstNode, FrontendError> {
+    Ok(Frontend::from_user_input()?.build_ast()?)
+}
+
+fn build_ast_from_str(expr: &str) -> Result<AstNode, FrontendError> {
+    Ok(Frontend::from_str(expr).build_ast()?)
+}
 
 fn main() {
-    match Frontend::new("(8 + 2 * 5) / (1 + 3 * 2 - 4)").build_ast() {
+    match build_ast_from_user_input() {
         Ok(ast) => {
             dbg!(ast);
             ()
