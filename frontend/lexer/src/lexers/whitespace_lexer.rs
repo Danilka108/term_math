@@ -1,5 +1,5 @@
 use crate::lexer::Lexer;
-use ast::token::Token;
+use token::Token;
 
 impl<'s> Lexer<'s> {
     fn is_whitespace(sym: char) -> bool {

@@ -1,4 +1,4 @@
-use ast::token::{DelimToken, Token, TokenKind};
+use token::{DelimToken, Token, TokenKind};
 use error::FrontendError;
 use lexer::TokenStream;
 

@@ -1,5 +1,5 @@
 use crate::lexer::Lexer;
-use ast::token::{Token, TokenKind};
+use token::{Token, TokenKind};
 use crate::constants::ERR__INVALID_NUMBER_VALUE;
 
 impl<'s> Lexer<'s> {

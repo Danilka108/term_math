@@ -1,4 +1,4 @@
-use ast::token::Token;
+use token::Token;
 
 #[derive(Debug, Clone)]
 pub struct TokenStream {

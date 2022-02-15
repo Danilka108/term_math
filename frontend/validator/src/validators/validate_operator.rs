@@ -1,6 +1,6 @@
 use crate::constants::{ERR__INVALID_LEFT_OPERAND, ERR__INVALID_RIGHT_OPERAND};
 use crate::Validator;
-use ast::token::{LiteralToken, Token, TokenKind};
+use token::{LiteralToken, Token, TokenKind};
 use error::FrontendError;
 
 impl Validator {

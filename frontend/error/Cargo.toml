@@ -8,6 +8,6 @@ name = "error"
 path = "src/lib.rs"
 
 [dependencies]
-ast = { path = "../ast" }
+token = { path = "../token" }
 colored = "2"
 termsize = "0.1.*"

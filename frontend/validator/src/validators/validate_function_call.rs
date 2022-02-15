@@ -3,7 +3,7 @@ use crate::constants::{
     ERR__MISSING_FUNC_ARGS_BLOCK, ERR__MISSING_FUNC_IDENT,
 };
 use crate::Validator;
-use ast::token::{DelimToken, LiteralToken, Token, TokenKind};
+use token::{DelimToken, LiteralToken, Token, TokenKind};
 use error::FrontendError;
 
 impl Validator {

@@ -1,5 +1,5 @@
 use crate::parser::Parser;
-use ast::token::TokenKind;
+use token::TokenKind;
 use error::FrontendError;
 
 impl Parser {

@@ -1,11 +1,11 @@
 [package]
-name = "lexer"
+name = "token"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "lexer"
+name = "token"
 path = "src/lib.rs"
 
 [dependencies]
-token = { path = "../token" }
+ast = { path = "../../ast" }

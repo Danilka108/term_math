@@ -8,6 +8,6 @@ name = "validator"
 path = "src/lib.rs"
 
 [dependencies]
-ast = { path = "../ast" }
+token = { path = "../token" }
 lexer = { path = "../lexer" }
 error = { path = "../error" }

@@ -1,4 +1,4 @@
-use ast::token::Token;
+use token::Token;
 use colored::*;
 
 pub struct FrontendError {

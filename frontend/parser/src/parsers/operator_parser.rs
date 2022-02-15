@@ -1,5 +1,6 @@
 use crate::parser::{BufferNode, Parser};
-use ast::node::{AstNode, OperatorNode};
+use token::FromToken;
+use ast::{AstNode, OperatorNode};
 use error::FrontendError;
 
 impl Parser {

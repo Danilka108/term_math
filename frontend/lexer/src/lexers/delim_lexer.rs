@@ -1,5 +1,5 @@
 use crate::lexer::Lexer;
-use ast::token::{TokenKind, DelimToken, Token};
+use token::{TokenKind, DelimToken, Token};
 
 impl<'s> Lexer<'s> {
     pub(crate) fn lex_delim(&mut self) -> Option<Token> {

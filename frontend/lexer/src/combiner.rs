@@ -1,4 +1,4 @@
-use ast::token::TokenSpan;
+use token::TokenSpan;
 
 pub(crate) struct Combiner {
     val: String,

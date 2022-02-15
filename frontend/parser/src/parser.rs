@@ -1,6 +1,6 @@
 use crate::constants::ERR__UNKNOWN_ERROR;
-use ast::node::{AstNode, OperatorNode, FunctionCallNode};
-use ast::token::{DelimToken, TokenKind};
+use ast::{AstNode, OperatorNode, FunctionCallNode};
+use token::{DelimToken, TokenKind};
 use error::FrontendError;
 use lexer::TokenStream;
 use std::panic::Location;

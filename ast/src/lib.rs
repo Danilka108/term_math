@@ -1,5 +1,3 @@
-use crate::token::{LiteralToken, Token, TokenKind};
-
 const ADDITION_OPERATOR_PRIORITY: usize = 2;
 const SUBTRACTION_OPERATOR_PRIORITY: usize = 2;
 const DIVISION_OPERATOR_PRIORITY: usize = 1;
@@ -29,21 +27,6 @@ impl OperatorNode {
         }
     }
 
-    pub fn from_token(token: &Token) -> Option<Self> {
-        use OperatorKind::*;
-
-        Some(match token.kind() {
-            TokenKind::Literal(literal) => match literal {
-                LiteralToken::Plus => Self::new(Addition),
-                LiteralToken::Hyphen => Self::new(Subtraction),
-                LiteralToken::Asterisk => Self::new(Multiplication),
-                LiteralToken::Slash => Self::new(Division),
-                _ => return None,
-            },
-            _ => return None,
-        })
-    }
-
     pub fn set_left_operand(mut self, operand: AstNode) -> Self {
         self.left_operand = Some(Box::new(operand));
         self
@@ -52,6 +35,14 @@ impl OperatorNode {
     pub fn set_right_operand(mut self, operand: AstNode) -> Self {
         self.right_operand = Some(Box::new(operand));
         self
+    }
+
+    pub fn left_operand(&self) -> Option<Box<AstNode>> {
+        self.left_operand.clone()
+    }
+
+    pub fn right_operand(&self) -> Option<Box<AstNode>> {
+        self.right_operand.clone()
     }
 
     pub fn priority(&self) -> usize {
@@ -74,6 +65,10 @@ pub struct NumberNode {
 impl NumberNode {
     pub fn new(value: String) -> Self {
         Self { value }
+    }
+
+    pub fn value(&self) -> String {
+        self.value.clone()
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::Validator;
-use ast::token::TokenKind;
+use token::TokenKind;
 use error::FrontendError;
 
 impl Validator {

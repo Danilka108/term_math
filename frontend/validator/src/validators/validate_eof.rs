@@ -1,6 +1,6 @@
 use crate::constants::ERR__EMPTY_EXPR;
 use crate::Validator;
-use ast::token::TokenKind;
+use token::TokenKind;
 use error::FrontendError;
 
 impl Validator {

@@ -3,7 +3,7 @@ use crate::constants::{
     ERR__MISSING_OPERATOR_TO_THE_LEFT_OF_DELIM, ERR__MISSING_OPERATOR_TO_THE_RIGHT_OF_DELIM,
 };
 use crate::validator::{DelimStackElement, Validator};
-use ast::token::{DelimToken, LiteralToken, Token, TokenKind};
+use token::{DelimToken, LiteralToken, Token, TokenKind};
 use error::FrontendError;
 
 impl Validator {

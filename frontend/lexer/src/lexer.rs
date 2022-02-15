@@ -2,7 +2,7 @@ use crate::combiner::Combiner;
 use crate::constants::ERR__UNKNOWN_SYMBOLS;
 use crate::symbol_stream::SymbolStream;
 pub use crate::token_stream::TokenStream;
-use ast::token::{Token, TokenKind, TokenSpan};
+use token::{Token, TokenKind, TokenSpan};
 
 pub struct Lexer<'s> {
     pub(crate) input_expr: String,

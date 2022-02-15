@@ -1,5 +1,5 @@
 use crate::lexer::Lexer;
-use ast::token::{Token, TokenKind, TokenSpan};
+use token::{Token, TokenKind, TokenSpan};
 
 impl<'s> Lexer<'s> {
     pub(crate) fn lex_eof(&mut self) -> Option<Token> {

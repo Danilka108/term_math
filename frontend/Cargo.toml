@@ -12,4 +12,5 @@ lexer = { path = "lexer" }
 parser = { path = "parser" }
 validator = { path = "validator" }
 error = { path = "error" }
-ast = { path = "ast" }
+token = { path = "token" }
+ast = { path = "../ast" }
