@@ -9,3 +9,4 @@ path = "src/lib.rs"
 
 [dependencies]
 ast = { path = "../../ast" }
+real_number = { path = "real_number" }

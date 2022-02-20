@@ -1,8 +1,8 @@
-use token::TokenSpan;
+use ast::span::Span;
 
 pub(crate) struct Combiner {
     val: String,
-    span: Option<TokenSpan>,
+    span: Option<Span>,
 }
 
 impl Combiner {
@@ -15,14 +15,14 @@ impl Combiner {
 
     pub(crate) fn push(&mut self, sym: char, pos: usize) {
         self.span = match self.span.clone() {
-            None => Some(TokenSpan::new(pos, pos + 1)),
-            Some(span) => Some(TokenSpan::new(span.start(), pos + 1)),
+            None => Some(Span::new(pos, pos + 1)),
+            Some(span) => Some(Span::new(span.start(), pos + 1)),
         };
 
         self.val.push(sym);
     }
 
-    pub(crate) fn combine(&mut self) -> Option<(TokenSpan, String)> {
+    pub(crate) fn combine(&mut self) -> Option<(Span, String)> {
         if self.val.len() == 0 {
             return None;
         }

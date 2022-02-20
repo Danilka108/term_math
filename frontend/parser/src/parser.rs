@@ -1,5 +1,6 @@
 use crate::constants::ERR__UNKNOWN_ERROR;
-use ast::{AstNode, OperatorNode, FunctionCallNode};
+use ast::node::{AstNode, OperatorNode, FunctionCallNode};
+use ast::span::Span;
 use token::{DelimToken, TokenKind};
 use error::FrontendError;
 use lexer::TokenStream;
@@ -8,8 +9,8 @@ use std::panic::Location;
 #[derive(Clone, Debug)]
 pub(crate) enum BufferNode {
     Delim(DelimToken),
-    Operator(OperatorNode),
-    FunctionCall((FunctionCallNode, bool)),
+    Operator((OperatorNode, Span)),
+    FunctionCall((FunctionCallNode, Span, bool)),
 }
 
 pub struct Parser {

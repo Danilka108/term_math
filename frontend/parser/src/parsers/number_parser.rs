@@ -1,5 +1,5 @@
 use crate::parser::Parser;
-use ast::{AstNode, NumberNode};
+use ast::node::{AstNode, NumberNode, NodeKind};
 use token::TokenKind;
 use error::FrontendError;
 
@@ -10,8 +10,13 @@ impl Parser {
             _ => return Ok(()),
         };
 
+        let span = match self.token_stream.curr() {
+            Some(token) => token.span(),
+            _ => return Ok(()),
+        };
+
         self.output
-            .push(AstNode::Number(NumberNode::new(number_val)));
+            .push(AstNode::new(NodeKind::Number(NumberNode::new(number_val)), span));
 
         Ok(())
     }

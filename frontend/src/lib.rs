@@ -1,4 +1,4 @@
-use ast::AstNode;
+use ast::node::AstNode;
 pub use error::FrontendError;
 use lexer::Lexer;
 use parser::Parser;

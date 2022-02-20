@@ -92,6 +92,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 name = "lexer"
 version = "0.1.0"
 dependencies = [
+ "ast",
  "token",
 ]
 
@@ -106,6 +107,7 @@ name = "number"
 version = "0.1.0"
 dependencies = [
  "ast",
+ "real_number",
 ]
 
 [[package]]
@@ -124,6 +126,10 @@ dependencies = [
  "token",
  "validator",
 ]
+
+[[package]]
+name = "real_number"
+version = "0.1.0"
 
 [[package]]
 name = "redox_syscall"

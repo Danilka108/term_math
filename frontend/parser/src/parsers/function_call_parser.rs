@@ -1,7 +1,7 @@
 use crate::parser::{BufferNode, Parser};
-use ast::{AstNode, FunctionCallNode};
-use token::{LiteralToken, TokenKind};
+use ast::node::{AstNode, FunctionCallNode, NodeKind};
 use error::FrontendError;
+use token::{LiteralToken, TokenKind};
 
 impl Parser {
     fn parse_ident(&mut self) -> Result<(), FrontendError> {
@@ -10,8 +10,14 @@ impl Parser {
             _ => return Ok(()),
         };
 
+        let span = match self.token_stream.curr() {
+            Some(token) => token.span(),
+            _ => return Ok(()),
+        };
+
         self.buffer.push(BufferNode::FunctionCall((
             FunctionCallNode::new(ident_val),
+            span,
             false,
         )));
 
@@ -32,12 +38,12 @@ impl Parser {
         let node_pos = if self.buffer.len() >= 2 {
             self.buffer.len() - 2
         } else {
-            return Ok(())
+            return Ok(());
         };
 
-        let (fn_call_node, has_args) = match self.buffer.get_mut(node_pos) {
+        let (fn_call_node, _, has_args) = match self.buffer.get_mut(node_pos) {
             Some(BufferNode::FunctionCall(node)) => node,
-            _ => return Ok(())
+            _ => return Ok(()),
         };
 
         *has_args = true;
@@ -55,14 +61,19 @@ impl Parser {
         match self.get_curr_token_kind() {
             Some(TokenKind::CloseDelim(_)) => (),
             _ => return Ok(()),
+        }
+
+        let close_paren_span = match self.token_stream.curr() {
+            Some(token) => token.span(),
+            _ => return Ok(()),
         };
 
-        let (mut fn_call_node, has_args) = match self.buffer.pop() {
+        let (mut fn_call_node, ident_span, has_args) = match self.buffer.pop() {
             Some(BufferNode::FunctionCall(node)) => node,
             Some(buffer_node) => {
                 self.buffer.push(buffer_node);
-                return Ok(())
-            },
+                return Ok(());
+            }
             _ => return Ok(()),
         };
 
@@ -73,7 +84,10 @@ impl Parser {
             }
         }
 
-        self.output.push(AstNode::FunctionCall(fn_call_node));
+        self.output.push(AstNode::new(
+            NodeKind::FunctionCall(fn_call_node),
+            ident_span.concat(&close_paren_span),
+        ));
 
         Ok(())
     }

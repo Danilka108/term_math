@@ -1,5 +1,6 @@
 use crate::lexer::Lexer;
-use token::{Token, TokenKind, TokenSpan};
+use token::{Token, TokenKind};
+use ast::span::Span;
 
 impl<'s> Lexer<'s> {
     pub(crate) fn lex_eof(&mut self) -> Option<Token> {
@@ -8,7 +9,7 @@ impl<'s> Lexer<'s> {
         }
 
         let pos = self.symbol_stream.eof_pos();
-        let span = TokenSpan::new(pos, pos + 1);
+        let span = Span::new(pos, pos + 1);
         let kind = TokenKind::Eof;
 
         Some(Token::new(kind, span))

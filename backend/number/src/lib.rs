@@ -1,3 +1,5 @@
-mod sign;
 mod number;
-mod real_number;
+mod cmp;
+mod ops;
+
+pub use number::Number;

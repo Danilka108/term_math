@@ -1,4 +1,4 @@
-use ast::{OperatorNode, OperatorKind};
+use ast::node::{OperatorNode, OperatorKind};
 use crate::token::{TokenKind, LiteralToken, Token};
 
 pub trait FromToken {

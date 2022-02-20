@@ -1,11 +1,11 @@
-use super::RealNumber;
+use crate::RealNumber;
 use std::ops::Neg;
 
 impl Neg for RealNumber {
     type Output = RealNumber;
 
     fn neg(mut self) -> Self::Output {
-        self.sign = -(self.sign);
+        self.sign = -self.sign;
         self
     }
 }

@@ -9,3 +9,4 @@ path = "src/lib.rs"
 
 [dependencies]
 token = { path = "../token" }
+ast = { path = "../../ast" }

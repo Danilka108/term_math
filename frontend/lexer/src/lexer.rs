@@ -2,7 +2,8 @@ use crate::combiner::Combiner;
 use crate::constants::ERR__UNKNOWN_SYMBOLS;
 use crate::symbol_stream::SymbolStream;
 pub use crate::token_stream::TokenStream;
-use token::{Token, TokenKind, TokenSpan};
+use token::{Token, TokenKind};
+use ast::span::Span;
 
 pub struct Lexer<'s> {
     pub(crate) input_expr: String,
@@ -44,7 +45,7 @@ impl<'s> Lexer<'s> {
         self.symbol_stream.to_next();
 
         let pos = self.symbol_stream.pos()?;
-        let span = TokenSpan::new(pos, pos + 1);
+        let span = Span::new(pos, pos + 1);
 
         Some(Token::new(kind, span))
     }
@@ -52,7 +53,7 @@ impl<'s> Lexer<'s> {
     pub(crate) fn lex_while(
         &mut self,
         mut predicate: impl FnMut(char) -> bool,
-    ) -> Option<(TokenSpan, String)> {
+    ) -> Option<(Span, String)> {
         let start_pos = if let Some(pos) = self.symbol_stream.pos() {
             pos + 1
         } else {
@@ -72,7 +73,7 @@ impl<'s> Lexer<'s> {
         }
 
         if val.len() != 0 {
-            let span = TokenSpan::new(start_pos, end_pos);
+            let span = Span::new(start_pos, end_pos);
             Some((span, val))
         } else {
             None
