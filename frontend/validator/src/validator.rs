@@ -1,5 +1,5 @@
 use token::{DelimToken, Token, TokenKind};
-use error::FrontendError;
+use error::Error;
 use lexer::TokenStream;
 
 #[derive(Clone, Debug)]
@@ -44,10 +44,11 @@ impl Validator {
         }
     }
 
-    pub fn validate(mut self) -> Result<(), FrontendError> {
+    pub fn validate(mut self) -> Result<(), Error> {
         while let Some(_) = self.token_stream.to_next() {
-            self.validate_operator()?;
-            self.validate_function_call()?;
+            self.validate_op()?;
+            self.validate_num()?;
+            self.validate_fn_call()?;
             self.validate_delim()?;
             self.validate_eof()?;
             self.validate_error()?;

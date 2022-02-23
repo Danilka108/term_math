@@ -1,10 +1,10 @@
 use crate::parser::{BufferNode, Parser};
-use ast::node::{AstNode, FunctionCallNode, NodeKind};
-use error::FrontendError;
+use ast::node::{AstNode, FnCallNode, NodeKind};
+use error::Error;
 use token::{LiteralToken, TokenKind};
 
 impl Parser {
-    fn parse_ident(&mut self) -> Result<(), FrontendError> {
+    fn parse_ident(&mut self) -> Result<(), Error> {
         let ident_val = match self.get_curr_token_kind() {
             Some(TokenKind::Ident(val)) => val,
             _ => return Ok(()),
@@ -15,8 +15,8 @@ impl Parser {
             _ => return Ok(()),
         };
 
-        self.buffer.push(BufferNode::FunctionCall((
-            FunctionCallNode::new(ident_val),
+        self.buffer.push(BufferNode::FnCall((
+            FnCallNode::new(ident_val),
             span,
             false,
         )));
@@ -24,13 +24,13 @@ impl Parser {
         Ok(())
     }
 
-    fn parse_comma(&mut self) -> Result<(), FrontendError> {
+    fn parse_comma(&mut self) -> Result<(), Error> {
         match self.get_curr_token_kind() {
             Some(TokenKind::Literal(LiteralToken::Comma)) => (),
             _ => return Ok(()),
         }
 
-        self.parse_operators(|buffer_node| match buffer_node {
+        self.parse_ops(|buffer_node| match buffer_node {
             Some(BufferNode::Delim(_)) => true,
             _ => false,
         })?;
@@ -42,7 +42,7 @@ impl Parser {
         };
 
         let (fn_call_node, _, has_args) = match self.buffer.get_mut(node_pos) {
-            Some(BufferNode::FunctionCall(node)) => node,
+            Some(BufferNode::FnCall(node)) => node,
             _ => return Ok(()),
         };
 
@@ -57,7 +57,7 @@ impl Parser {
         }
     }
 
-    fn parse_close_paren(&mut self) -> Result<(), FrontendError> {
+    fn parse_close_paren(&mut self) -> Result<(), Error> {
         match self.get_curr_token_kind() {
             Some(TokenKind::CloseDelim(_)) => (),
             _ => return Ok(()),
@@ -69,7 +69,7 @@ impl Parser {
         };
 
         let (mut fn_call_node, ident_span, has_args) = match self.buffer.pop() {
-            Some(BufferNode::FunctionCall(node)) => node,
+            Some(BufferNode::FnCall(node)) => node,
             Some(buffer_node) => {
                 self.buffer.push(buffer_node);
                 return Ok(());
@@ -85,14 +85,14 @@ impl Parser {
         }
 
         self.output.push(AstNode::new(
-            NodeKind::FunctionCall(fn_call_node),
+            NodeKind::FnCall(fn_call_node),
             ident_span.concat(&close_paren_span),
         ));
 
         Ok(())
     }
 
-    pub(crate) fn parse_function_call(&mut self) -> Result<(), FrontendError> {
+    pub(crate) fn parse_fn_call(&mut self) -> Result<(), Error> {
         self.parse_ident()?;
         self.parse_comma()?;
         self.parse_close_paren()

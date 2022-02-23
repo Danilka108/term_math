@@ -1,11 +1,10 @@
 [package]
-name = "real_number"
+name = "constants"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "real_number"
+name = "constants"
 path = "src/lib.rs"
 
 [dependencies]
-constants = { path = "../../../constants" }

@@ -65,8 +65,6 @@ impl Ord for RealNumber {
             (sign, _) => sign,
         };
 
-        dbg!("dsf");
-
         match a_num.len().cmp(&b_num.len()) {
             Ordering::Equal => (),
             Ordering::Less => match sign {

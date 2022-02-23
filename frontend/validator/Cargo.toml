@@ -10,4 +10,4 @@ path = "src/lib.rs"
 [dependencies]
 token = { path = "../token" }
 lexer = { path = "../lexer" }
-error = { path = "../error" }
+error = { path = "../../error" }

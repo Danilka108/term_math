@@ -1,4 +1,4 @@
-use crate::constants::DECIMAL_RADIX;
+use constants::DECIMAL_RADIX;
 use crate::sign::Sign;
 use crate::vec::{GetDigit, Longest, PushDigit, Shortest};
 use crate::RealNumber;

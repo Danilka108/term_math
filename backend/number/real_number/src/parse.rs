@@ -1,11 +1,12 @@
 use crate::sign::Sign;
 use crate::RealNumber;
+use constants::DECIMAL_RADIX;
 
 impl RealNumber {
     fn parse_parts(val: Vec<char>) -> Option<(Vec<char>, Vec<char>)> {
         let is_valid_val = val
             .iter()
-            .fold(true, |acc, chr| acc && (chr.is_digit(10) || *chr == '.'));
+            .fold(true, |acc, chr| acc && (chr.is_digit(DECIMAL_RADIX as u32) || *chr == '.'));
 
         if !is_valid_val {
             return None;
@@ -15,7 +16,7 @@ impl RealNumber {
 
         match parts.len() {
             1 => Some((parts.first()?.to_vec(), Vec::new())),
-            2 => Some((parts.first()?.to_vec(), parts.last()?.to_vec())),
+            2 if parts.first()?.len() != 0 && parts.last()?.len() != 0 => Some((parts.first()?.to_vec(), parts.last()?.to_vec())),
             _ => None,
         }
     }
@@ -25,8 +26,20 @@ impl RealNumber {
             return None;
         }
 
-        if int_part[0] == '0' && int_part.len() > 1 {
-            return None;
+        let mut vec = Vec::new();
+        let mut is_insignificant_zeros = true;
+
+        for &chr in int_part.iter() {
+            if chr == '0' && is_insignificant_zeros {
+                continue;
+            }
+
+            is_insignificant_zeros = false;
+            vec.push(chr);
+        }
+
+        if vec.len() == 0 {
+            vec.push('0');
         }
 
         Some(int_part)

@@ -1,5 +1,5 @@
 use ast::node::AstNode;
-pub use error::FrontendError;
+use error::Error;
 use lexer::Lexer;
 use parser::Parser;
 use validator::Validator;
@@ -16,13 +16,13 @@ impl Frontend {
         Self { expr: expr.to_string() }
     }
 
-    pub fn from_user_input() -> Result<Self, FrontendError> {
+    pub fn from_user_input() -> Result<Self, Error> {
         println!("Enter math expression:");
 
         let mut buffer = String::new();
 
         match io::stdin().read_line(&mut buffer) {
-            Err(_) => Err(FrontendError::new(&buffer, ERR__INPUT_ERROR.to_string(), 0, 0)),
+            Err(_) => Err(Error::new(&buffer, ERR__INPUT_ERROR.to_string(), 0, 0)),
             _ => Ok(()),
         }?;
 
@@ -34,7 +34,7 @@ impl Frontend {
         Ok(Self { expr: buffer })
     }
 
-    pub fn build_ast(self) -> Result<AstNode, FrontendError> {
+    pub fn build_ast(self) -> Result<AstNode, Error> {
         let token_stream = &mut Lexer::new(&self.expr).lex();
         Validator::new(token_stream).validate()?;
         Parser::new(token_stream).parse()

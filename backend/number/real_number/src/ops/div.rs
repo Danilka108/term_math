@@ -1,4 +1,5 @@
-use crate::constants::{DECIMAL_RADIX, DEFAULT_FRAC_ACCURACY};
+use crate::constants::DEFAULT_FRAC_ACCURACY;
+use constants::DECIMAL_RADIX;
 use crate::RealNumber;
 use std::ops::{Div, DivAssign};
 

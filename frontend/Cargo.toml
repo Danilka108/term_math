@@ -11,6 +11,6 @@ path = "src/lib.rs"
 lexer = { path = "lexer" }
 parser = { path = "parser" }
 validator = { path = "validator" }
-error = { path = "error" }
+error = { path = "../error" }
 token = { path = "token" }
 ast = { path = "../ast" }

@@ -1,4 +1,5 @@
-use super::constants::{DECIMAL_RADIX, DECIMAL_RADIX_I16, ZERO_AS_U8};
+use super::constants::ZERO_AS_U8;
+use constants::{DECIMAL_RADIX, DECIMAL_RADIX_I16};
 
 pub(crate) trait PushDigit {
     fn push_digit(&mut self, digit: u8);

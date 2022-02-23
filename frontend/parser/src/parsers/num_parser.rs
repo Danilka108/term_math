@@ -1,10 +1,10 @@
 use crate::parser::Parser;
-use ast::node::{AstNode, NumberNode, NodeKind};
+use ast::node::{AstNode, NumNode, NodeKind};
 use token::TokenKind;
-use error::FrontendError;
+use error::Error;
 
 impl Parser {
-    pub(crate) fn parse_number(&mut self) -> Result<(), FrontendError> {
+    pub(crate) fn parse_number(&mut self) -> Result<(), Error> {
         let number_val = match self.get_curr_token_kind() {
             Some(TokenKind::Number(val)) => val,
             _ => return Ok(()),
@@ -16,7 +16,7 @@ impl Parser {
         };
 
         self.output
-            .push(AstNode::new(NodeKind::Number(NumberNode::new(number_val)), span));
+            .push(AstNode::new(NodeKind::Num(NumNode::new(number_val)), span));
 
         Ok(())
     }

@@ -1,5 +1,6 @@
 pub(crate) const ERR__INVALID_LEFT_OPERAND: &str = "Invalid left operand";
 pub(crate) const ERR__INVALID_RIGHT_OPERAND: &str = "Invalid right operand";
+pub(crate) const ERR__NUMBER_IS_NOT_OPERAND_OR_FN_ARG: &str = "Number is not operator operand or function argument";
 pub(crate) const ERR__MISSING_OPERATOR_TO_THE_LEFT_OF_DELIM: &str = "Missing operator to the left of delimiter";
 pub(crate) const ERR__MISSING_OPERATOR_TO_THE_RIGHT_OF_DELIM: &str = "Missing operator to the right of delimiter";
 pub(crate) const ERR__MISSING_OPEN_DELIM: &str = "Missing open delimiter";

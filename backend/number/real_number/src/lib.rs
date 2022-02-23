@@ -9,8 +9,6 @@ mod vec;
 mod cmp;
 mod ops;
 
-pub use constants::DECIMAL_RADIX;
-
 use crate::sign::Sign;
 use std::string::ToString;
 

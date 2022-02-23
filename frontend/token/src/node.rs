@@ -1,22 +1,21 @@
-use ast::node::{OperatorNode, OperatorKind};
+use ast::node::{OpNode, BinOpNode, BinOpKind, UnOpKind, UnOpNode};
 use crate::token::{TokenKind, LiteralToken, Token};
 
 pub trait FromToken {
-    fn from_token(token: &Token) -> Option<OperatorNode> {
-        use OperatorKind::*;
-
-        Some(match token.kind() {
+    fn from_token(token: &Token, is_unary: bool) -> Option<OpNode> {
+        match token.kind() {
             TokenKind::Literal(literal) => match literal {
-                LiteralToken::Plus => OperatorNode::new(Addition),
-                LiteralToken::Hyphen => OperatorNode::new(Subtraction),
-                LiteralToken::Asterisk => OperatorNode::new(Multiplication),
-                LiteralToken::Slash => OperatorNode::new(Division),
-                _ => return None,
+                LiteralToken::Plus => Some(BinOpNode::new(BinOpKind::Add)),
+                LiteralToken::Hyphen if is_unary => Some(UnOpNode::new(UnOpKind::Neg)),
+                LiteralToken::Hyphen => Some(BinOpNode::new(BinOpKind::Sub)),
+                LiteralToken::Asterisk => Some(BinOpNode::new(BinOpKind::Mul)),
+                LiteralToken::Slash => Some(BinOpNode::new(BinOpKind::Div)),
+                _ => None,
             },
-            _ => return None,
-        })
+            _ => None,
+        } 
     }
 
 }
 
-impl FromToken for OperatorNode {}
+impl FromToken for OpNode {}

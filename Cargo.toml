@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 ast = { path = "ast" }
+error = { path = "error" }
 frontend = { path = "frontend" }
 backend = { path = "backend" }

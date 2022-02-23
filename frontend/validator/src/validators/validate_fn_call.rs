@@ -4,10 +4,11 @@ use crate::constants::{
 };
 use crate::Validator;
 use token::{DelimToken, LiteralToken, Token, TokenKind};
-use error::FrontendError;
+use error::Error;
+use crate::FromToken;
 
 impl Validator {
-    fn validate_ident(&self) -> Result<(), FrontendError> {
+    fn validate_ident(&self) -> Result<(), Error> {
         let curr_token = match self.token_stream.curr() {
             Some(token) => match token.kind() {
                 TokenKind::Ident(_) => token,
@@ -16,7 +17,7 @@ impl Validator {
             _ => return Ok(()),
         };
 
-        let err = FrontendError::from_token(
+        let err = Error::from_token(
             self.token_stream.expr(),
             ERR__MISSING_FUNC_ARGS_BLOCK,
             curr_token,
@@ -31,36 +32,36 @@ impl Validator {
         }
     }
 
-    fn validate_prev_arg_to_missing(&self, curr_token: &Token) -> Result<(), FrontendError> {
+    fn validate_prev_arg_to_missing(&self, curr_token: &Token) -> Result<(), Error> {
         match self.get_prev_token_kind() {
             Some(TokenKind::OpenDelim(_) | TokenKind::Literal(LiteralToken::Comma)) => (),
             _ => return Ok(()),
         }
 
-        Err(FrontendError::from_token(
+        Err(Error::from_token(
             self.token_stream.expr(),
             ERR__MISSING_FUNC_ARG,
             curr_token,
         ))
     }
 
-    fn validate_next_arg_to_missing(&self, curr_token: &Token) -> Result<(), FrontendError> {
+    fn validate_next_arg_to_missing(&self, curr_token: &Token) -> Result<(), Error> {
         match self.get_next_token_kind() {
             Some(TokenKind::CloseDelim(_) | TokenKind::Literal(LiteralToken::Comma)) => (),
             _ => return Ok(()),
         }
 
-        Err(FrontendError::from_token(
+        Err(Error::from_token(
             self.token_stream.expr(),
             ERR__MISSING_FUNC_ARG,
             curr_token,
         ))
     }
 
-    fn validate_ident_to_missing(&self, curr_token: &Token) -> Result<(), FrontendError> {
+    fn validate_ident_to_missing(&self, curr_token: &Token) -> Result<(), Error> {
         match self.delim_stack.last() {
             Some(element) if element.is_present_args && !element.is_present_ident => {
-                Err(FrontendError::new(
+                Err(Error::new(
                     self.token_stream.expr(),
                     ERR__MISSING_FUNC_IDENT.to_string(),
                     element.token.span().start(),
@@ -71,9 +72,9 @@ impl Validator {
         }
     }
 
-    fn validate_delim_type(&self, curr_token: &Token) -> Result<(), FrontendError> {
+    fn validate_delim_type(&self, curr_token: &Token) -> Result<(), Error> {
         match self.delim_stack.last() {
-            Some(element) if element.is_present_ident && !element.kind.is_eq(&DelimToken::Paren) => Err(FrontendError::new(
+            Some(element) if element.is_present_ident && !element.kind.is_eq(&DelimToken::Paren) => Err(Error::new(
                 self.token_stream.expr(),
                 ERR__INVALID_DELIM_TYPE_OF_FUNC_ARGS_BLOCK.to_string(),
                 element.token.span().start(),
@@ -83,7 +84,7 @@ impl Validator {
         }
     }
 
-    fn validate_comma(&mut self) -> Result<(), FrontendError> {
+    fn validate_comma(&mut self) -> Result<(), Error> {
         let curr_token = match self.token_stream.curr() {
             Some(token) => match token.kind() {
                 TokenKind::Literal(LiteralToken::Comma) => token,
@@ -105,7 +106,7 @@ impl Validator {
         Ok(())
     }
 
-    fn validate_close_paren(&self) -> Result<(), FrontendError> {
+    fn validate_close_paren(&self) -> Result<(), Error> {
         let curr_token = match self.token_stream.curr() {
             Some(token) => match token.kind() {
                 TokenKind::CloseDelim(_) => token,
@@ -120,7 +121,7 @@ impl Validator {
         Ok(())
     }
 
-    pub(crate) fn validate_function_call(&mut self) -> Result<(), FrontendError> {
+    pub(crate) fn validate_fn_call(&mut self) -> Result<(), Error> {
         self.validate_ident()?;
         self.validate_comma()?;
         self.validate_close_paren()

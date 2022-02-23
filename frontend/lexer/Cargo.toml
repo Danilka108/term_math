@@ -8,5 +8,6 @@ name = "lexer"
 path = "src/lib.rs"
 
 [dependencies]
+constants = { path = "../../constants" }
 token = { path = "../token" }
 ast = { path = "../../ast" }

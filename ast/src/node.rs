@@ -1,28 +1,34 @@
+use crate::constants::{
+    ADD_OP_PRIORITY, DIV_OP_PRIORITY, MUL_OP_PRIORITY, NEG_OP_PRIORITY, SUB_OP_PRIORITY,
+};
 use crate::span::Span;
-use crate::{ADDITION_OPERATOR_PRIORITY, MULTIPLICATION_OPERATOR_PRIORITY, DIVISION_OPERATOR_PRIORITY, SUBTRACTION_OPERATOR_PRIORITY};
 
-#[derive(Debug, Clone)]
-pub enum OperatorKind {
-    Addition,
-    Subtraction,
-    Division,
-    Multiplication,
+#[derive(Clone, Debug)]
+pub enum BinOpKind {
+    Add,
+    Sub,
+    Div,
+    Mul,
 }
 
-#[derive(Debug, Clone)]
-pub struct OperatorNode {
+#[derive(Clone, Debug)]
+pub struct BinOpNode {
     left_operand: Option<Box<AstNode>>,
     right_operand: Option<Box<AstNode>>,
-    kind: OperatorKind,
+    kind: BinOpKind,
 }
 
-impl OperatorNode {
-    pub fn new(kind: OperatorKind) -> Self {
-        Self {
+impl BinOpNode {
+    pub fn new(kind: BinOpKind) -> OpNode {
+        OpNode::Bin(Self {
+            kind,
             left_operand: None,
             right_operand: None,
-            kind,
-        }
+        })
+    }
+
+    pub fn to_op_node(self) -> OpNode {
+        OpNode::Bin(self)
     }
 
     pub fn set_left_operand(mut self, operand: AstNode) -> Self {
@@ -35,6 +41,10 @@ impl OperatorNode {
         self
     }
 
+    pub fn kind(&self) -> BinOpKind {
+        self.kind.clone()
+    }
+
     pub fn left_operand(&self) -> Option<Box<AstNode>> {
         self.left_operand.clone()
     }
@@ -42,25 +52,69 @@ impl OperatorNode {
     pub fn right_operand(&self) -> Option<Box<AstNode>> {
         self.right_operand.clone()
     }
+}
 
+#[derive(Clone, Debug)]
+pub enum UnOpKind {
+    Neg,
+}
+
+#[derive(Clone, Debug)]
+pub struct UnOpNode {
+    right_operand: Option<Box<AstNode>>,
+    kind: UnOpKind,
+}
+
+impl UnOpNode {
+    pub fn new(kind: UnOpKind) -> OpNode {
+        OpNode::Un(Self {
+            kind,
+            right_operand: None,
+        })
+    }
+
+    pub fn to_op_node(self) -> OpNode {
+        OpNode::Un(self)
+    }
+
+    pub fn set_right_operand(mut self, operand: AstNode) -> Self {
+        self.right_operand = Some(Box::new(operand));
+        self
+    }
+
+    pub fn kind(&self) -> UnOpKind {
+        self.kind.clone()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum OpNode {
+    Bin(BinOpNode),
+    Un(UnOpNode),
+}
+
+impl OpNode {
     pub fn priority(&self) -> usize {
-        use OperatorKind::*;
-
-        match self.kind {
-            Addition => ADDITION_OPERATOR_PRIORITY,
-            Subtraction => SUBTRACTION_OPERATOR_PRIORITY,
-            Multiplication => MULTIPLICATION_OPERATOR_PRIORITY,
-            Division => DIVISION_OPERATOR_PRIORITY,
+        match self {
+            Self::Bin(bin_op_node) => match bin_op_node.kind() {
+                BinOpKind::Add => ADD_OP_PRIORITY,
+                BinOpKind::Sub => SUB_OP_PRIORITY,
+                BinOpKind::Mul => MUL_OP_PRIORITY,
+                BinOpKind::Div => DIV_OP_PRIORITY,
+            },
+            Self::Un(un_op_node) => match un_op_node.kind() {
+                UnOpKind::Neg => NEG_OP_PRIORITY,
+            },
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct NumberNode {
+pub struct NumNode {
     value: String,
 }
 
-impl NumberNode {
+impl NumNode {
     pub fn new(value: String) -> Self {
         Self { value }
     }
@@ -71,14 +125,17 @@ impl NumberNode {
 }
 
 #[derive(Debug, Clone)]
-pub struct FunctionCallNode {
-    function_name: String,
+pub struct FnCallNode {
+    fn_name: String,
     args: Vec<AstNode>,
 }
 
-impl FunctionCallNode {
-    pub fn new(function_name: String) -> Self {
-        Self { function_name, args: Vec::new() }
+impl FnCallNode {
+    pub fn new(fn_name: String) -> Self {
+        Self {
+            fn_name,
+            args: Vec::new(),
+        }
     }
 
     pub fn push_arg(&mut self, arg: AstNode) {
@@ -88,9 +145,9 @@ impl FunctionCallNode {
 
 #[derive(Debug, Clone)]
 pub enum NodeKind {
-    Operator(OperatorNode),
-    Number(NumberNode),
-    FunctionCall(FunctionCallNode),
+    Op(OpNode),
+    Num(NumNode),
+    FnCall(FnCallNode),
 }
 
 #[derive(Debug, Clone)]

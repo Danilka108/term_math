@@ -1,31 +1,17 @@
-use token::Token;
 use colored::*;
 
-pub struct FrontendError {
+pub struct Error {
     input_expr: String,
     msg: String,
     start: usize,
     end: usize,
 }
 
-impl FrontendError {
+impl Error {
     pub fn new(input_expr: &String, msg: String, start: usize, end: usize) -> Self {
         Self {
             input_expr: input_expr.clone(),
             msg,
-            start,
-            end,
-        }
-    }
-
-    pub fn from_token(input_expr: &String, msg: &str, token: &Token) -> Self {
-        let span = token.span();
-        let start = span.start();
-        let end = span.end();
-
-        Self {
-            input_expr: input_expr.clone(),
-            msg: msg.to_string(),
             start,
             end,
         }
@@ -84,7 +70,7 @@ impl FrontendError {
     }
 }
 
-impl std::fmt::Display for FrontendError {
+impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let output_expr = self.get_output_expr();
 
