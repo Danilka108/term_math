@@ -1,171 +1,158 @@
 use crate::constants::{
-    ADD_OP_PRIORITY, DIV_OP_PRIORITY, MUL_OP_PRIORITY, NEG_OP_PRIORITY, SUB_OP_PRIORITY,
+    ADD_OP_PRIORITY, DIV_OP_PRIORITY, MUL_OP_PRIORITY, SUB_OP_PRIORITY,
 };
 use crate::span::Span;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct NumNode {
+    val: String,
+    span: Span,
+}
+
+impl NumNode {
+    pub fn new(val: String, span: Span) -> Self {
+        Self { val, span }
+    }
+
+    pub fn val(&self) -> String {
+        self.val.clone()
+    }
+
+    pub fn span(&self) -> Span {
+        self.span.clone()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BinOpKind {
     Add,
     Sub,
-    Div,
     Mul,
+    Div,
 }
 
-#[derive(Clone, Debug)]
+impl BinOpKind {
+    pub fn priority(&self) -> usize {
+        match self {
+            Self::Add => ADD_OP_PRIORITY,
+            Self::Sub => SUB_OP_PRIORITY,
+            Self::Mul => MUL_OP_PRIORITY,
+            Self::Div => DIV_OP_PRIORITY,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BinOpNode {
-    left_operand: Option<Box<AstNode>>,
-    right_operand: Option<Box<AstNode>>,
+    left_operand: Box<AstNode>,
+    right_operand: Box<AstNode>,
     kind: BinOpKind,
+    span: Span,
 }
 
 impl BinOpNode {
-    pub fn new(kind: BinOpKind) -> OpNode {
-        OpNode::Bin(Self {
+    pub fn new(
+        kind: BinOpKind,
+        left_operand: Box<AstNode>,
+        right_operand: Box<AstNode>,
+        span: Span,
+    ) -> Self {
+        Self {
             kind,
-            left_operand: None,
-            right_operand: None,
-        })
-    }
-
-    pub fn to_op_node(self) -> OpNode {
-        OpNode::Bin(self)
-    }
-
-    pub fn set_left_operand(mut self, operand: AstNode) -> Self {
-        self.left_operand = Some(Box::new(operand));
-        self
-    }
-
-    pub fn set_right_operand(mut self, operand: AstNode) -> Self {
-        self.right_operand = Some(Box::new(operand));
-        self
+            left_operand,
+            right_operand,
+            span,
+        }
     }
 
     pub fn kind(&self) -> BinOpKind {
         self.kind.clone()
     }
 
-    pub fn left_operand(&self) -> Option<Box<AstNode>> {
+    pub fn span(&self) -> Span {
+        self.span.clone()
+    }
+
+    pub fn left_operand(&self) -> Box<AstNode> {
         self.left_operand.clone()
     }
 
-    pub fn right_operand(&self) -> Option<Box<AstNode>> {
+    pub fn right_operand(&self) -> Box<AstNode> {
         self.right_operand.clone()
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum UnOpKind {
     Neg,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UnOpNode {
-    right_operand: Option<Box<AstNode>>,
+    operand: Box<AstNode>,
     kind: UnOpKind,
+    span: Span,
 }
 
 impl UnOpNode {
-    pub fn new(kind: UnOpKind) -> OpNode {
-        OpNode::Un(Self {
+    pub fn new(kind: UnOpKind, operand: Box<AstNode>, span: Span) -> Self {
+        Self {
             kind,
-            right_operand: None,
-        })
-    }
-
-    pub fn to_op_node(self) -> OpNode {
-        OpNode::Un(self)
-    }
-
-    pub fn set_right_operand(mut self, operand: AstNode) -> Self {
-        self.right_operand = Some(Box::new(operand));
-        self
+            operand,
+            span,
+        }
     }
 
     pub fn kind(&self) -> UnOpKind {
         self.kind.clone()
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum OpNode {
-    Bin(BinOpNode),
-    Un(UnOpNode),
-}
-
-impl OpNode {
-    pub fn priority(&self) -> usize {
-        match self {
-            Self::Bin(bin_op_node) => match bin_op_node.kind() {
-                BinOpKind::Add => ADD_OP_PRIORITY,
-                BinOpKind::Sub => SUB_OP_PRIORITY,
-                BinOpKind::Mul => MUL_OP_PRIORITY,
-                BinOpKind::Div => DIV_OP_PRIORITY,
-            },
-            Self::Un(un_op_node) => match un_op_node.kind() {
-                UnOpKind::Neg => NEG_OP_PRIORITY,
-            },
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct NumNode {
-    value: String,
-}
-
-impl NumNode {
-    pub fn new(value: String) -> Self {
-        Self { value }
-    }
-
-    pub fn value(&self) -> String {
-        self.value.clone()
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct FnCallNode {
-    fn_name: String,
-    args: Vec<AstNode>,
-}
-
-impl FnCallNode {
-    pub fn new(fn_name: String) -> Self {
-        Self {
-            fn_name,
-            args: Vec::new(),
-        }
-    }
-
-    pub fn push_arg(&mut self, arg: AstNode) {
-        self.args.push(arg)
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum NodeKind {
-    Op(OpNode),
-    Num(NumNode),
-    FnCall(FnCallNode),
-}
-
-#[derive(Debug, Clone)]
-pub struct AstNode {
-    kind: NodeKind,
-    span: Span,
-}
-
-impl AstNode {
-    pub fn new(kind: NodeKind, span: Span) -> Self {
-        Self { kind, span }
     }
 
     pub fn span(&self) -> Span {
         self.span.clone()
     }
 
-    pub fn kind(&self) -> NodeKind {
-        self.kind.clone()
+    pub fn operand(&self) -> Box<AstNode> {
+        self.operand.clone()
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FnCallNode {
+    fn_name: String,
+    args: Vec<Box<AstNode>>,
+    span: Span,
+}
+
+impl FnCallNode {
+    pub fn new(fn_name: String, span: Span) -> Self {
+        Self {
+            fn_name,
+            args: Vec::new(),
+            span,
+        }
+    }
+
+    pub fn fn_name(&self) -> String {
+        self.fn_name.clone()
+    }
+
+    pub fn span(&self) -> Span {
+        self.span.clone()
+    }
+
+    pub fn args(&self) -> Vec<Box<AstNode>> {
+        self.args.clone()
+    }
+
+    pub fn push_arg(&mut self, arg: Box<AstNode>) {
+        self.args.push(arg);
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum AstNode {
+    Num(NumNode),
+    BinOp(BinOpNode),
+    UnOp(UnOpNode),
+    FnCall(FnCallNode),
 }

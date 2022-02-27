@@ -1,15 +1,36 @@
 use colored::*;
 
-pub struct Error {
+enum NotificationKind {
+    Warn,
+    Err,
+}
+
+pub struct Notification {
     input_expr: String,
     msg: String,
     start: usize,
     end: usize,
+    kind: NotificationKind,
 }
 
-impl Error {
-    pub fn new(input_expr: &String, msg: String, start: usize, end: usize) -> Self {
+impl Notification {
+    pub fn new_error(input_expr: &String, msg: String, start: usize, end: usize) -> Self {
+        Self::new(NotificationKind::Err, input_expr, msg, start, end)
+    }
+
+    pub fn new_warning(input_expr: &String, msg: String, start: usize, end: usize) -> Self {
+        Self::new(NotificationKind::Warn, input_expr, msg, start, end)
+    }
+
+    fn new(
+        kind: NotificationKind,
+        input_expr: &String,
+        msg: String,
+        start: usize,
+        end: usize,
+    ) -> Self {
         Self {
+            kind,
             input_expr: input_expr.clone(),
             msg,
             start,
@@ -70,16 +91,26 @@ impl Error {
     }
 }
 
-impl std::fmt::Display for Error {
+impl std::fmt::Display for Notification {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let output_expr = self.get_output_expr();
 
-        writeln!(f, "{} {}.", "Error:".red().bold(), self.msg.bold())?;
+        let message_prefix = match self.kind {
+            NotificationKind::Err => "Error:".red().bold(),
+            NotificationKind::Warn => "Warning:".red().yellow(),
+        };
+
+        writeln!(f, "{} {}.", message_prefix, self.msg.bold())?;
         writeln!(f, "{}", "|".blue().bold())?;
 
         for (expr, underline) in output_expr {
+            let underline = match self.kind {
+                NotificationKind::Err => underline.red().bold(),
+                NotificationKind::Warn => underline.yellow().bold(),
+            };
+
             writeln!(f, "{} {}", "|".blue().bold(), expr.italic())?;
-            writeln!(f, "{} {}", "|".blue().bold(), underline.red().bold())?;
+            writeln!(f, "{} {}", "|".blue().bold(), underline)?;
             writeln!(f, "{}", "|".blue().bold())?;
         }
 

@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Span {
     start: usize,
     end: usize,
@@ -20,4 +20,8 @@ impl Span {
     pub fn concat(&self, other: &Self) -> Self {
         Self::new(self.start, other.end)
     }
+}
+
+pub trait GetSpan {
+    fn get_span(&self) -> Span;
 }

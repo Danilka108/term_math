@@ -1,26 +1,27 @@
 use crate::constants::ERR__UNKNOWN_ERROR;
-use ast::node::{AstNode, OpNode, FnCallNode};
+use ast::node::{AstNode, BinOpKind, UnOpKind, FnCallNode};
 use ast::span::Span;
-use token::{DelimToken, TokenKind};
-use error::Error;
+use token::{DelimKind, TokenKind};
+use notification::Notification;
 use lexer::TokenStream;
 use std::panic::Location;
 
 #[derive(Clone, Debug)]
-pub(crate) enum BufferNode {
-    Delim(DelimToken),
-    Op((OpNode, Span)),
-    FnCall((FnCallNode, Span, bool)),
+pub(crate) enum BufferElement {
+    Delim(DelimKind),
+    BinOp(BinOpKind, Span),
+    UnOp(UnOpKind, Span),
+    FnCall(Box<FnCallNode>, bool),
 }
 
 pub struct Parser {
     pub(crate) token_stream: TokenStream,
-    pub(crate) output: Vec<AstNode>,
-    pub(crate) buffer: Vec<BufferNode>,
+    pub(crate) output: Vec<Box<AstNode>>,
+    pub(crate) buffer: Vec<BufferElement>,
 }
 
 impl Parser {
-    const PARSERS: [fn(&mut Self) -> Result<(), Error>; 5] = [
+    const PARSERS: [fn(&mut Self) -> Result<(), Notification>; 5] = [
         Self::parse_number,
         Self::parse_op,
         Self::parse_delim,
@@ -37,9 +38,9 @@ impl Parser {
     }
 
     #[track_caller]
-    pub(crate) fn get_unknown_err(&self) -> Error {
+    pub(crate) fn get_unknown_err(&self) -> Notification {
         dbg!(Location::caller());
-        Error::new(
+        Notification::new_error(
             &self.token_stream.expr(),
             ERR__UNKNOWN_ERROR.to_string(),
             0,
@@ -55,12 +56,13 @@ impl Parser {
         Some(self.token_stream.curr()?.kind())
     }
 
-    pub fn parse(mut self) -> Result<AstNode, Error> {
+    pub fn parse(mut self) -> Result<Box<AstNode>, Notification> {
         while let Some(_) = self.token_stream.to_next() {
             for parse in Self::PARSERS {
                 parse(&mut self)?;
             }
         }
+
 
         match self.output.pop() {
             Some(node) if self.output.is_empty() => Ok(node),

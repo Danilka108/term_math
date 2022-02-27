@@ -1,13 +1,13 @@
-use error::Error;
+use notification::Notification;
 use token::Token;
 
-pub trait FromToken {
-    fn from_token(input_expr: &String, msg: &str, token: &Token) -> Error {
+pub trait ErrorFromToken {
+    fn new_error_from_token(input_expr: &String, msg: &str, token: &Token) -> Notification {
         let span = token.span();
         let start = span.start();
         let end = span.end();
 
-        Error::new(
+        Notification::new_error(
             input_expr,
             msg.to_string(),
             start,
@@ -16,4 +16,4 @@ pub trait FromToken {
     }
 }
 
-impl FromToken for Error {}
+impl ErrorFromToken for Notification {}

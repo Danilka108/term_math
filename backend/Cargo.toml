@@ -9,4 +9,5 @@ path = "src/lib.rs"
 
 [dependencies]
 ast = { path = "../ast" }
+notification = { path = "../notification" }
 number = { path = "number" }

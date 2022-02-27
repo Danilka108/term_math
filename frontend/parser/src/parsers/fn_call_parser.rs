@@ -1,10 +1,10 @@
-use crate::parser::{BufferNode, Parser};
-use ast::node::{AstNode, FnCallNode, NodeKind};
-use error::Error;
-use token::{LiteralToken, TokenKind};
+use crate::parser::{BufferElement, Parser};
+use ast::node::{AstNode, FnCallNode};
+use notification::Notification;
+use token::{LiteralKind, TokenKind};
 
 impl Parser {
-    fn parse_ident(&mut self) -> Result<(), Error> {
+    fn parse_ident(&mut self) -> Result<(), Notification> {
         let ident_val = match self.get_curr_token_kind() {
             Some(TokenKind::Ident(val)) => val,
             _ => return Ok(()),
@@ -15,23 +15,22 @@ impl Parser {
             _ => return Ok(()),
         };
 
-        self.buffer.push(BufferNode::FnCall((
-            FnCallNode::new(ident_val),
-            span,
-            false,
-        )));
+        let fn_call_node = Box::new(FnCallNode::new(ident_val, span));
+        let buffer_element = BufferElement::FnCall(fn_call_node, false);
+
+        self.buffer.push(buffer_element);
 
         Ok(())
     }
 
-    fn parse_comma(&mut self) -> Result<(), Error> {
+    fn parse_comma(&mut self) -> Result<(), Notification> {
         match self.get_curr_token_kind() {
-            Some(TokenKind::Literal(LiteralToken::Comma)) => (),
+            Some(TokenKind::Literal(LiteralKind::Comma)) => (),
             _ => return Ok(()),
         }
 
         self.parse_ops(|buffer_node| match buffer_node {
-            Some(BufferNode::Delim(_)) => true,
+            BufferElement::Delim(_) => true,
             _ => false,
         })?;
 
@@ -41,8 +40,8 @@ impl Parser {
             return Ok(());
         };
 
-        let (fn_call_node, _, has_args) = match self.buffer.get_mut(node_pos) {
-            Some(BufferNode::FnCall(node)) => node,
+        let (fn_call_node, has_args) = match self.buffer.get_mut(node_pos) {
+            Some(BufferElement::FnCall(node, has_args)) => (node, has_args),
             _ => return Ok(()),
         };
 
@@ -57,19 +56,14 @@ impl Parser {
         }
     }
 
-    fn parse_close_paren(&mut self) -> Result<(), Error> {
+    fn parse_close_paren(&mut self) -> Result<(), Notification> {
         match self.get_curr_token_kind() {
             Some(TokenKind::CloseDelim(_)) => (),
             _ => return Ok(()),
         }
 
-        let close_paren_span = match self.token_stream.curr() {
-            Some(token) => token.span(),
-            _ => return Ok(()),
-        };
-
-        let (mut fn_call_node, ident_span, has_args) = match self.buffer.pop() {
-            Some(BufferNode::FnCall(node)) => node,
+        let (mut fn_call_node, has_args) = match self.buffer.pop() {
+            Some(BufferElement::FnCall(node, has_args)) => (node, has_args),
             Some(buffer_node) => {
                 self.buffer.push(buffer_node);
                 return Ok(());
@@ -77,22 +71,19 @@ impl Parser {
             _ => return Ok(()),
         };
 
-        if has_args {
-            match self.output.pop() {
-                Some(node) => fn_call_node.push_arg(node),
-                _ => return Err(self.get_unknown_err()),
-            }
+        match self.output.pop() {
+            Some(node) if has_args => fn_call_node.push_arg(node),
+            Some(node) if !has_args => self.output.push(node),
+            _ => return Err(self.get_unknown_err()),
         }
 
-        self.output.push(AstNode::new(
-            NodeKind::FnCall(fn_call_node),
-            ident_span.concat(&close_paren_span),
-        ));
+        let node = AstNode::FnCall(*fn_call_node);
+        self.output.push(Box::new(node));
 
         Ok(())
     }
 
-    pub(crate) fn parse_fn_call(&mut self) -> Result<(), Error> {
+    pub(crate) fn parse_fn_call(&mut self) -> Result<(), Notification> {
         self.parse_ident()?;
         self.parse_comma()?;
         self.parse_close_paren()

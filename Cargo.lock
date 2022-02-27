@@ -22,6 +22,7 @@ name = "backend"
 version = "0.1.0"
 dependencies = [
  "ast",
+ "notification",
  "number",
 ]
 
@@ -47,20 +48,12 @@ name = "constants"
 version = "0.1.0"
 
 [[package]]
-name = "error"
-version = "0.1.0"
-dependencies = [
- "colored",
- "termsize",
-]
-
-[[package]]
 name = "frontend"
 version = "0.1.0"
 dependencies = [
  "ast",
- "error",
  "lexer",
+ "notification",
  "parser",
  "token",
  "validator",
@@ -107,6 +100,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1bf2e165bb3457c8e098ea76f3e3bc9db55f87aa90d52d0e6be741470916aaa4"
 
 [[package]]
+name = "notification"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "termsize",
+]
+
+[[package]]
 name = "number"
 version = "0.1.0"
 dependencies = [
@@ -125,8 +126,8 @@ name = "parser"
 version = "0.1.0"
 dependencies = [
  "ast",
- "error",
  "lexer",
+ "notification",
  "token",
  "validator",
 ]
@@ -162,8 +163,8 @@ version = "0.1.0"
 dependencies = [
  "ast",
  "backend",
- "error",
  "frontend",
+ "notification",
 ]
 
 [[package]]
@@ -202,8 +203,8 @@ dependencies = [
 name = "validator"
 version = "0.1.0"
 dependencies = [
- "error",
  "lexer",
+ "notification",
  "token",
 ]
 

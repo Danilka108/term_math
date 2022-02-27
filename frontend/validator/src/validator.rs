@@ -1,10 +1,10 @@
-use token::{DelimToken, Token, TokenKind};
-use error::Error;
+use token::{DelimKind, Token, TokenKind};
+use notification::Notification;
 use lexer::TokenStream;
 
 #[derive(Clone, Debug)]
 pub(crate) struct DelimStackElement {
-    pub kind: DelimToken,
+    pub kind: DelimKind,
     pub token: Token,
     pub is_present_ident: bool,
     pub is_present_args: bool,
@@ -44,7 +44,7 @@ impl Validator {
         }
     }
 
-    pub fn validate(mut self) -> Result<(), Error> {
+    pub fn validate(mut self) -> Result<(), Notification> {
         while let Some(_) = self.token_stream.to_next() {
             self.validate_op()?;
             self.validate_num()?;

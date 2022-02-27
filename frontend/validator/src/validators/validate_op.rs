@@ -1,8 +1,8 @@
 use crate::constants::{ERR__INVALID_LEFT_OPERAND, ERR__INVALID_RIGHT_OPERAND};
 use crate::Validator;
-use token::{LiteralToken, Token, TokenKind};
-use error::Error;
-use crate::FromToken;
+use token::{LiteralKind, Token, TokenKind};
+use notification::Notification;
+use crate::ErrorFromToken;
 
 impl Validator {
     fn is_left_operand_valid(&self, operand_token: Option<&Token>) -> bool {
@@ -25,14 +25,14 @@ impl Validator {
         }
     }
 
-    fn validate_binary_op(&self) -> Result<(), Error> {
+    fn validate_binary_op(&self) -> Result<(), Notification> {
         let curr_token = match self.token_stream.curr() {
             Some(token) => match token.kind() {
                 TokenKind::Literal(lit) => match lit {
-                    LiteralToken::Asterisk
-                    | LiteralToken::Plus
-                    | LiteralToken::Slash
-                    | LiteralToken::Hyphen => token,
+                    LiteralKind::Asterisk
+                    | LiteralKind::Plus
+                    | LiteralKind::Slash
+                    | LiteralKind::Hyphen => token,
                     _ => return Ok(()),
                 },
                 _ => return Ok(()),
@@ -41,7 +41,7 @@ impl Validator {
         };
 
         if !self.is_left_operand_valid(self.token_stream.prev()) {
-            return Err(Error::from_token(
+            return Err(Notification::new_error_from_token(
                 self.token_stream.expr(),
                 ERR__INVALID_LEFT_OPERAND,
                 curr_token,
@@ -49,7 +49,7 @@ impl Validator {
         }
 
         if !self.is_right_operand_valid(self.token_stream.next()) {
-            return Err(Error::from_token(
+            return Err(Notification::new_error_from_token(
                 self.token_stream.expr(),
                 ERR__INVALID_RIGHT_OPERAND,
                 curr_token,
@@ -59,13 +59,13 @@ impl Validator {
         Ok(())
     }
 
-    fn validate_unary_op(&self) -> Result<(), Error> {
+    fn validate_unary_op(&self) -> Result<(), Notification> {
         let is_left_operand_valid = |operand_token: Option<&Token>| -> bool {
             match operand_token {
                 Some(token) => match token.kind() {
                     TokenKind::OpenDelim(_)
                     | TokenKind::CloseDelim(_)
-                    | TokenKind::Literal(LiteralToken::Comma)
+                    | TokenKind::Literal(LiteralKind::Comma)
                      => true,
                     _ => false,
                 },
@@ -76,7 +76,7 @@ impl Validator {
         let curr_token = match self.token_stream.curr() {
             Some(token) => match token.kind() {
                 TokenKind::Literal(lit) => match lit {
-                    LiteralToken::Hyphen => token,
+                    LiteralKind::Hyphen => token,
                     _ => return Ok(()),
                 },
                 _ => return Ok(()),
@@ -85,7 +85,7 @@ impl Validator {
         };
 
         if !is_left_operand_valid(self.token_stream.prev()) {
-            return Err(Error::from_token(
+            return Err(Notification::new_error_from_token(
                 self.token_stream.expr(),
                 ERR__INVALID_LEFT_OPERAND,
                 curr_token,
@@ -93,7 +93,7 @@ impl Validator {
         }
 
         if !self.is_right_operand_valid(self.token_stream.next()) {
-            return Err(Error::from_token(
+            return Err(Notification::new_error_from_token(
                 self.token_stream.expr(),
                 ERR__INVALID_RIGHT_OPERAND,
                 curr_token,
@@ -103,7 +103,7 @@ impl Validator {
         Ok(())
     }
 
-    pub(crate) fn validate_op(&self) -> Result<(), Error> {
+    pub(crate) fn validate_op(&self) -> Result<(), Notification> {
         match (self.validate_unary_op(), self.validate_binary_op()) {
             (Err(_), Err(err)) => Err(err),
             _ => Ok(()),

@@ -1,15 +1,15 @@
 use crate::lexer::Lexer;
-use token::{TokenKind, DelimToken, Token};
+use token::{TokenKind, DelimKind, Token};
 
 impl<'s> Lexer<'s> {
     pub(crate) fn lex_delim(&mut self) -> Option<Token> {
         let identify = |sym| match sym {
-            '(' => Some(TokenKind::OpenDelim(DelimToken::Paren)),
-            ')' => Some(TokenKind::CloseDelim(DelimToken::Paren)),
-            '{' => Some(TokenKind::OpenDelim(DelimToken::Brace)),
-            '}' => Some(TokenKind::CloseDelim(DelimToken::Brace)),
-            ']' => Some(TokenKind::OpenDelim(DelimToken::Bracket)),
-            '[' => Some(TokenKind::CloseDelim(DelimToken::Bracket)),
+            '(' => Some(TokenKind::OpenDelim(DelimKind::Paren)),
+            ')' => Some(TokenKind::CloseDelim(DelimKind::Paren)),
+            '{' => Some(TokenKind::OpenDelim(DelimKind::Brace)),
+            '}' => Some(TokenKind::CloseDelim(DelimKind::Brace)),
+            ']' => Some(TokenKind::OpenDelim(DelimKind::Bracket)),
+            '[' => Some(TokenKind::CloseDelim(DelimKind::Bracket)),
             _ => None,
         };
 
