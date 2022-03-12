@@ -40,8 +40,9 @@ impl FloatNumber {
 
         for other_pos in other_start_bound..other_end_bound {
             let other_digit = other.get_digit(other_pos).unwrap();
-            let mul_to_digit = self.umul_to_digit(other_digit);
-            new_num = new_num.sum(mul_to_digit);
+            let mut mul = self.umul_to_digit(other_digit);
+            mul.exponent = other_pos;
+            new_num = new_num.sum(mul);
         }
 
         new_num.exponent = new_num_exp;

@@ -1,18 +1,24 @@
-use crate::{FloatNumber, Sign};
+use crate::FloatNumber;
 use std::cmp::Ordering;
 
 impl FloatNumber {
-    fn ucmp(&self, other: &Self) -> Ordering {
+    pub(crate) fn ucmp(&self, other: &Self) -> Ordering {
         match self.int_part_len().cmp(&other.int_part_len()) {
             Ordering::Equal => (),
             ord => return ord,
         }
 
-        let digits = self.significand.iter().zip(other.significand.iter());
+        let start_bound = self.start_bound().min(other.start_bound());
+        let end_bound = self.end_bound().max(other.end_bound());
 
-        for (self_digit, other_digit) in digits {
-            match self_digit.cmp(other_digit) {
-                Ordering::Equal => continue,
+        for pos in (start_bound..end_bound).rev() {
+            let (self_digit, other_digit) = match (self.get_digit(pos), other.get_digit(pos)) {
+                (Some(s), Some(o)) => (s, o),
+                _ => break,
+            };
+
+            match self_digit.cmp(&other_digit) {
+                Ordering::Equal => (),
                 ord => return ord,
             }
         }
@@ -20,16 +26,15 @@ impl FloatNumber {
         Ordering::Equal
     }
 
-    pub(crate) fn cmp(&self, other: &Self) -> Ordering {
+    pub(crate) fn icmp(&self, other: &Self) -> Ordering {
         if self.is_zero() && other.is_zero() {
             return Ordering::Equal;
         }
 
-        match (&self.sign, &other.sign) {
-            (Sign::Pos, Sign::Pos) => self.ucmp(other),
-            (Sign::Neg, Sign::Neg) => self.ucmp(other).reverse(),
-            (Sign::Pos, Sign::Neg) => Ordering::Greater,
-            (Sign::Neg, Sign::Pos) => Ordering::Less,
+        match self.cmp_sign(other) {
+            Ordering::Equal if self.is_neg() => self.ucmp(other).reverse(),
+            Ordering::Equal => self.ucmp(other),
+            ord => ord,
         }
     }
 
@@ -62,8 +67,8 @@ impl FloatNumber {
         }
     }
 
-    pub(crate) fn is_eq(&self, other: &Self) -> bool {
-        match self.cmp(other) {
+    pub(crate) fn is_ieq(&self, other: &Self) -> bool {
+        match self.icmp(other) {
             Ordering::Equal => true,
             _ => false,
         }
