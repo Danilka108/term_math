@@ -1,6 +1,6 @@
 use crate::parser::{BufferElement, Parser};
-use token::TokenKind;
 use notification::Notification;
+use token::TokenKind;
 
 impl Parser {
     fn parse_open_delim(&mut self) -> Result<(), Notification> {
@@ -21,9 +21,7 @@ impl Parser {
         };
 
         self.parse_ops(|buffer_element| match buffer_element {
-            BufferElement::Delim(other_delim_kind) if other_delim_kind.is_eq(&delim_kind) => {
-                true
-            }
+            BufferElement::Delim(other_delim_kind) if other_delim_kind.is_eq(&delim_kind) => true,
             _ => false,
         })?;
 

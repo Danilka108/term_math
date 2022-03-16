@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+number_2 = { path = "number_2" }
 notification = { path = "notification" }
 ast = { path = "ast" }
 frontend = { path = "frontend" }

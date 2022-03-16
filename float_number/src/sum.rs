@@ -1,22 +1,17 @@
 use crate::FloatNumber;
-use crate::Sign;
 
 impl FloatNumber {
-    fn uadd(self, other: Self) -> Self {
-        let start_bound = self.start_bound().min(other.start_bound());
-        let end_bound = self.end_bound().max(other.end_bound());
+    fn uadd(max_num: Self, min_num: Self) -> Self {
+        let start_bound = max_num.start_bound().min(min_num.start_bound());
+        let end_bound = max_num.end_bound().max(min_num.end_bound());
 
-        let mut new_num = Self {
-            significand: vec![0; (end_bound - start_bound).unsigned_abs()],
-            exponent: start_bound,
-            sign: Sign::Pos,
-        };
+        let mut new_num = FloatNumber::from_bounds(start_bound, end_bound);
         let mut buffer = 0;
 
         for pos in start_bound..end_bound {
-            let self_digit = self.get_digit(pos).unwrap_or(0);
-            let other_digit = other.get_digit(pos).unwrap_or(0);
-            let sum = buffer + self_digit + other_digit;
+            let max_num_digit = max_num.get_digit(pos).unwrap_or(0);
+            let min_num_digit = min_num.get_digit(pos).unwrap_or(0);
+            let sum = buffer + max_num_digit + min_num_digit;
 
             new_num.set_digit(sum % Self::RADIX, pos);
             buffer = sum / Self::RADIX;
@@ -26,30 +21,26 @@ impl FloatNumber {
             new_num.set_digit(buffer % Self::RADIX, end_bound);
         }
 
-        new_num.trim_left_zeros().zeros_to_exp()
+        new_num.trim_zeros().set_sign_of(max_num)
     }
 
-    fn usub(self, other: Self) -> Self {
-        let start_bound = self.start_bound().min(other.start_bound());
-        let end_bound = self.end_bound().max(other.end_bound());
+    fn usub(reduced_num: Self, subtracted_num: Self) -> Self {
+        let start_bound = reduced_num.start_bound().min(subtracted_num.start_bound());
+        let end_bound = reduced_num.end_bound().max(subtracted_num.end_bound());
 
-        let mut new_num = Self {
-            significand: vec![0; (end_bound - start_bound).unsigned_abs()],
-            exponent: start_bound,
-            sign: Sign::Pos,
-        };
+        let mut new_num = Self::from_bounds(start_bound, end_bound);
         let mut borrowing = 0;
 
         for pos in start_bound..end_bound {
-            let self_digit = self.get_digit(pos).unwrap_or(0);
-            let other_digit = other.get_digit(pos).unwrap_or(0);
+            let reduced_digit = reduced_num.get_digit(pos).unwrap_or(0);
+            let subtracted_digit = subtracted_num.get_digit(pos).unwrap_or(0);
 
-            let subtract = if self_digit < other_digit + borrowing {
-                let sub = Self::RADIX + self_digit - other_digit - borrowing;
+            let subtract = if reduced_digit < subtracted_digit + borrowing {
+                let sub = Self::RADIX + reduced_digit - subtracted_digit - borrowing;
                 borrowing = 1;
                 sub
             } else {
-                let sub = self_digit - other_digit - borrowing;
+                let sub = reduced_digit - subtracted_digit - borrowing;
                 borrowing = 0;
                 sub
             };
@@ -61,29 +52,28 @@ impl FloatNumber {
             panic!("Reduced number is less than subtracted number");
         }
 
-        new_num.trim_left_zeros().zeros_to_exp()
+        new_num.trim_zeros().set_sign_of(reduced_num)
     }
 
     pub fn sum(self, other: Self) -> Self {
+        use std::cmp::Ordering;
+
         let (max, min) = self.get_umax_umin(other);
-        let result_sign = max.sign.clone();
 
-        if max.sign != min.sign && max.is_ueq(&min) {
-            return Self::zero();
+        match max.cmp_sign(&min) {
+            Ordering::Equal => Self::uadd(max, min),
+            _ if max.is_ueq(&min) => Self::zero(),
+            _ => Self::usub(max, min),
         }
-
-        if max.sign == min.sign {
-            max.uadd(min)
-        } else {
-            max.usub(min)
-        }
-        .set_sign(result_sign)
     }
 
     pub fn neg(self) -> Self {
-        match self.sign {
-            Sign::Pos => self.set_sign(Sign::Neg),
-            Sign::Neg => self.set_sign(Sign::Pos),
+        use crate::float_number::Sign;
+
+        if self.is_neg() {
+            self.set_sign(Sign::Pos)
+        } else {
+            self.set_sign(Sign::Neg)
         }
     }
 }
