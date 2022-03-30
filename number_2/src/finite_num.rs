@@ -70,7 +70,7 @@ pub trait ShiftPoint<EXP> {
     fn shift_point(self, offset: EXP) -> Self;
 }
 
-pub trait FiniteNum<'t, DIGIT, EXP, const RADIX: u32, const PRECISION: usize>
+pub trait Finite<'t, DIGIT, EXP, const RADIX: u32, const PRECISION: usize>
 where
     Self: TryFrom<&'t str>
         + TryFrom<String>

@@ -438,7 +438,7 @@ impl<const RADIX: u32, const PRECISION: usize> Bounds for FlNum<RADIX, PRECISION
     }
 }
 
-impl<'f, const RADIX: u32, const PRECISION: usize> FiniteNum<'f, u32, isize, RADIX, PRECISION>
+impl<'f, const RADIX: u32, const PRECISION: usize> Finite<'f, u32, isize, RADIX, PRECISION>
     for FlNum<RADIX, PRECISION>
 {
 }

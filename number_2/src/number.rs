@@ -6,6 +6,8 @@ use crate::finite_num::*;
 use crate::float_number::{FlNum, TryFromStringError};
 use crate::sign::Sign;
 
+type FiniteNum<const RADIX: u32, const PRECISION: usize> = FlNum<RADIX, PRECISION>;
+
 trait CheckToOverFlow<T> {
     type CheckRes;
 
@@ -19,7 +21,7 @@ trait CheckToOverFlow<T> {
 #[derive(Clone, Debug)]
 enum NumberKind<'f, F, const RADIX: u32, const PRECISION: usize>
 where
-    F: FiniteNum<'f, u32, isize, RADIX, PRECISION>,
+    F: Finite<'f, u32, isize, RADIX, PRECISION>,
 {
     Finite(F, PhantomData<&'f F>),
     PosInf,
@@ -29,16 +31,16 @@ where
 
 #[derive(Clone, Debug)]
 pub struct Number<'f, const RADIX: u32, const PRECISION: usize>(
-    NumberKind<'f, FlNum<RADIX, PRECISION>, RADIX, PRECISION>,
+    NumberKind<'f, FiniteNum<RADIX, PRECISION>, RADIX, PRECISION>,
 );
 
 impl<'f, const RADIX: u32, const PRECISION: usize> TryFrom<&str> for Number<'f, RADIX, PRECISION> {
     type Error = TryFromStringError;
 
     fn try_from(src: &str) -> Result<Self, Self::Error> {
-        let finite = match FlNum::try_from(src) {
+        let finite = match FiniteNum::try_from(src) {
             Err(err) => return Err(err as Self::Error),
-            Ok(f) => f as FlNum<RADIX, PRECISION>,
+            Ok(f) => f as FiniteNum<RADIX, PRECISION>,
         };
 
         Ok(Self::finite(finite))
@@ -66,19 +68,19 @@ impl<'f, const RADIX: u32, const PRECISION: usize> ToString for Number<'f, RADIX
     }
 }
 
-impl<'f, const RADIX: u32, const PRECISION: usize> CheckToOverFlow<&FlNum<RADIX, PRECISION>>
+impl<'f, const RADIX: u32, const PRECISION: usize> CheckToOverFlow<&FiniteNum<RADIX, PRECISION>>
     for Number<'f, RADIX, PRECISION>
 {
     type CheckRes = Self;
 
-    fn is_will_overflow(num: &FlNum<RADIX, PRECISION>) -> bool {
+    fn is_will_overflow(num: &FiniteNum<RADIX, PRECISION>) -> bool {
         match num.len().checked_add(1) {
             Some(l) => l.unsigned_abs() > PRECISION,
             None => true,
         }
     }
 
-    fn check_to_overflow(num: &FlNum<RADIX, PRECISION>) -> Option<Self::CheckRes> {
+    fn check_to_overflow(num: &FiniteNum<RADIX, PRECISION>) -> Option<Self::CheckRes> {
         if Self::is_will_overflow(num) && num.is_pos() {
             return Some(Self::pos_inf());
         }
@@ -91,7 +93,7 @@ impl<'f, const RADIX: u32, const PRECISION: usize> CheckToOverFlow<&FlNum<RADIX,
     }
 
     fn check_to_overflow_with_sign(
-        num: &FlNum<RADIX, PRECISION>,
+        num: &FiniteNum<RADIX, PRECISION>,
         sign: &Sign,
     ) -> Option<Self::CheckRes> {
         if Self::is_will_overflow(num) && sign.is_pos() {
@@ -141,20 +143,20 @@ impl<'f, const RADIX: u32, const PRECISION: usize> CheckToOverFlow<&Self>
 
 impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> {
     pub(crate) fn pos_inf() -> Self {
-        Self(NumberKind::<'f, FlNum<RADIX, PRECISION>, RADIX, PRECISION>::PosInf)
+        Self(NumberKind::<'f, FiniteNum<RADIX, PRECISION>, RADIX, PRECISION>::PosInf)
     }
 
     pub(crate) fn neg_inf() -> Self {
-        Self(NumberKind::<'f, FlNum<RADIX, PRECISION>, RADIX, PRECISION>::NegInf)
+        Self(NumberKind::<'f, FiniteNum<RADIX, PRECISION>, RADIX, PRECISION>::NegInf)
     }
 
     pub(crate) fn nan() -> Self {
-        Self(NumberKind::<'f, FlNum<RADIX, PRECISION>, RADIX, PRECISION>::NaN)
+        Self(NumberKind::<'f, FiniteNum<RADIX, PRECISION>, RADIX, PRECISION>::NaN)
     }
 
-    fn finite(finite: FlNum<RADIX, PRECISION>) -> Self {
+    fn finite(finite: FiniteNum<RADIX, PRECISION>) -> Self {
         Self(
-            NumberKind::<'f, FlNum<RADIX, PRECISION>, RADIX, PRECISION>::Finite(
+            NumberKind::<'f, FiniteNum<RADIX, PRECISION>, RADIX, PRECISION>::Finite(
                 finite,
                 PhantomData,
             ),
@@ -162,16 +164,16 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> 
     }
 
     pub(crate) fn zero() -> Self {
-        Self::finite(FlNum::zero())
+        Self::finite(FiniteNum::zero())
     }
 
     pub(crate) fn one() -> Self {
-        Self::finite(FlNum::one())
+        Self::finite(FiniteNum::one())
     }
 
     fn map_finite(
         self,
-        predicate: impl FnOnce(FlNum<RADIX, PRECISION>) -> FlNum<RADIX, PRECISION>,
+        predicate: impl FnOnce(FiniteNum<RADIX, PRECISION>) -> FiniteNum<RADIX, PRECISION>,
     ) -> Self {
         match self.0 {
             NumberKind::Finite(f, _) => Self::finite(predicate(f)),
@@ -180,8 +182,8 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> 
     }
 
     fn unsigned_finite_cmp(
-        lhs: &FlNum<RADIX, PRECISION>,
-        rhs: &FlNum<RADIX, PRECISION>,
+        lhs: &FiniteNum<RADIX, PRECISION>,
+        rhs: &FiniteNum<RADIX, PRECISION>,
     ) -> Ordering {
         match lhs.int_len().cmp(&rhs.int_len()) {
             Ordering::Equal => (),
@@ -201,7 +203,7 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> 
         Ordering::Equal
     }
 
-    fn finite_cmp(lhs: &FlNum<RADIX, PRECISION>, rhs: &FlNum<RADIX, PRECISION>) -> Ordering {
+    fn finite_cmp(lhs: &FiniteNum<RADIX, PRECISION>, rhs: &FiniteNum<RADIX, PRECISION>) -> Ordering {
         if lhs.is_zero() && rhs.is_zero() {
             return Ordering::Equal;
         }
@@ -213,14 +215,14 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> 
         }
     }
 
-    fn is_finite_eq(lhs: &FlNum<RADIX, PRECISION>, rhs: &FlNum<RADIX, PRECISION>) -> bool {
+    fn is_finite_eq(lhs: &FiniteNum<RADIX, PRECISION>, rhs: &FiniteNum<RADIX, PRECISION>) -> bool {
         matches!(Self::finite_cmp(lhs, rhs), Ordering::Equal)
     }
 
     fn unsigned_finite_max_min(
-        lhs: FlNum<RADIX, PRECISION>,
-        rhs: FlNum<RADIX, PRECISION>,
-    ) -> (FlNum<RADIX, PRECISION>, FlNum<RADIX, PRECISION>) {
+        lhs: FiniteNum<RADIX, PRECISION>,
+        rhs: FiniteNum<RADIX, PRECISION>,
+    ) -> (FiniteNum<RADIX, PRECISION>, FiniteNum<RADIX, PRECISION>) {
         match Self::unsigned_finite_cmp(&lhs, &rhs) {
             Ordering::Less => (rhs, lhs),
             Ordering::Greater | Ordering::Equal => (lhs, rhs),
@@ -228,10 +230,10 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> 
     }
 
     fn unsigned_finite_add(
-        max_num: FlNum<RADIX, PRECISION>,
-        min_num: FlNum<RADIX, PRECISION>,
+        max_num: FiniteNum<RADIX, PRECISION>,
+        min_num: FiniteNum<RADIX, PRECISION>,
     ) -> Self {
-        let mut new_num = FlNum::zero();
+        let mut new_num = FiniteNum::zero();
         let mut buffer = 0;
 
         if let Some(n) = Self::check_to_overflow(&max_num) {
@@ -256,10 +258,10 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> 
     }
 
     fn unsigned_finite_sub(
-        reduced_num: FlNum<RADIX, PRECISION>,
-        subtracted_num: FlNum<RADIX, PRECISION>,
+        reduced_num: FiniteNum<RADIX, PRECISION>,
+        subtracted_num: FiniteNum<RADIX, PRECISION>,
     ) -> Self {
-        let mut new_num = FlNum::zero();
+        let mut new_num = FiniteNum::zero();
         let mut borrowing = 0;
 
         for pos in reduced_num.merge_bounds(&subtracted_num) {
@@ -286,26 +288,26 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> 
         Self::finite(new_num.trim_zeros().set_sign(reduced_num))
     }
 
-    fn finite_sum(lhs: FlNum<RADIX, PRECISION>, rhs: FlNum<RADIX, PRECISION>) -> Self {
+    fn finite_sum(lhs: FiniteNum<RADIX, PRECISION>, rhs: FiniteNum<RADIX, PRECISION>) -> Self {
         let (umax, umin) = Self::unsigned_finite_max_min(lhs, rhs);
 
         match umax.cmp_sign(&umin) {
             Ordering::Equal => Self::unsigned_finite_add(umax, umin),
-            _ if Self::is_finite_eq(&umax, &umin) => Self::finite(FlNum::zero()),
+            _ if Self::is_finite_eq(&umax, &umin) => Self::finite(FiniteNum::zero()),
             _ => Self::unsigned_finite_sub(umax, umin),
         }
     }
 
     fn unsigned_finite_mul_to_digit(
         res_sign: &Sign,
-        num: &FlNum<RADIX, PRECISION>,
+        num: &FiniteNum<RADIX, PRECISION>,
         digit: u32,
     ) -> Self {
         if let Some(n) = Self::check_to_overflow_with_sign(num, res_sign) {
             return n;
         }
 
-        let mut new_num = FlNum::zero();
+        let mut new_num = FiniteNum::zero();
         let mut buffer = 0;
 
         for pos in num.bounds() {
@@ -324,9 +326,9 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> 
         Self::finite(new_num.set_sign(Sign::Pos).trim_zeros())
     }
 
-    fn finite_mul(lhs: FlNum<RADIX, PRECISION>, rhs: FlNum<RADIX, PRECISION>) -> Self {
+    fn finite_mul(lhs: FiniteNum<RADIX, PRECISION>, rhs: FiniteNum<RADIX, PRECISION>) -> Self {
         if lhs.is_zero() || rhs.is_zero() {
-            return Self::finite(FlNum::zero());
+            return Self::finite(FiniteNum::zero());
         }
 
         let res_sign = match lhs.cmp_sign(&rhs) {
@@ -334,7 +336,7 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> 
             _ => Sign::Neg,
         };
 
-        let mut new_num = Self::finite(FlNum::zero());
+        let mut new_num = Self::finite(FiniteNum::zero());
 
         for pos in rhs.bounds() {
             let digit = rhs.get_digit(pos).unwrap();
@@ -349,8 +351,8 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Number<'f, RADIX, PRECISION> 
     }
 
     fn finite_div(
-        finite_dividend: FlNum<RADIX, PRECISION>,
-        finite_divisor: FlNum<RADIX, PRECISION>,
+        finite_dividend: FiniteNum<RADIX, PRECISION>,
+        finite_divisor: FiniteNum<RADIX, PRECISION>,
     ) -> Self {
         if finite_divisor.is_one() {
             return Self::finite(finite_dividend);
@@ -503,22 +505,26 @@ impl<'f, const RADIX: u32, const PRECISION: usize> Div for Number<'f, RADIX, PRE
             | (NumberKind::PosInf, NumberKind::NegInf)
             | (NumberKind::NegInf, NumberKind::PosInf) => Self::nan(),
 
-            // +inf / -finite = -inf; 
+            // +inf / -finite = -inf;
             (NumberKind::PosInf, NumberKind::Finite(rhs, _)) if rhs.is_neg() => Self::neg_inf(),
-            // +inf / +finite = +inf; 
+            // +inf / +finite = +inf;
             (NumberKind::PosInf, NumberKind::Finite(___, _)) => Self::pos_inf(),
-            // -finite / +inf = -0; 
-            (NumberKind::Finite(lhs, _), NumberKind::PosInf) if lhs.is_neg() => Self::finite(FlNum::neg_zero()),
-            // +finite / +inf = 0; 
-            (NumberKind::Finite(___, _), NumberKind::PosInf) => Self::finite(FlNum::zero()),
-            // -inf / -finite = +inf; 
+            // -finite / +inf = -0;
+            (NumberKind::Finite(lhs, _), NumberKind::PosInf) if lhs.is_neg() => {
+                Self::finite(FiniteNum::neg_zero())
+            }
+            // +finite / +inf = 0;
+            (NumberKind::Finite(___, _), NumberKind::PosInf) => Self::finite(FiniteNum::zero()),
+            // -inf / -finite = +inf;
             (NumberKind::NegInf, NumberKind::Finite(rhs, _)) if rhs.is_neg() => Self::pos_inf(),
-            // -inf / +finite = -inf; 
+            // -inf / +finite = -inf;
             (NumberKind::NegInf, NumberKind::Finite(___, _)) => Self::neg_inf(),
-            // -finite / -inf = -0; 
-            (NumberKind::Finite(lhs, _), NumberKind::NegInf) if lhs.is_neg() => Self::finite(FlNum::zero()),
-            // +finite / -inf = -0; 
-            (NumberKind::Finite(___, _), NumberKind::NegInf) => Self::finite(FlNum::neg_zero()),
+            // -finite / -inf = -0;
+            (NumberKind::Finite(lhs, _), NumberKind::NegInf) if lhs.is_neg() => {
+                Self::finite(FiniteNum::zero())
+            }
+            // +finite / -inf = -0;
+            (NumberKind::Finite(___, _), NumberKind::NegInf) => Self::finite(FiniteNum::neg_zero()),
 
             (NumberKind::Finite(lhs, _), NumberKind::Finite(rhs, _))
                 if lhs.is_zero() && rhs.is_zero() || lhs.is_zero() =>
