@@ -8,3 +8,4 @@ name = "number_2"
 path = "src/lib.rs"
 
 [dependencies]
+constants = { path = "../constants" }

@@ -118,6 +118,9 @@ dependencies = [
 [[package]]
 name = "number_2"
 version = "0.1.0"
+dependencies = [
+ "constants",
+]
 
 [[package]]
 name = "numtoa"
