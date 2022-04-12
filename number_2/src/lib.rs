@@ -1,43 +1,24 @@
-mod finite_num;
-mod float_number;
+mod finite;
+mod finite_cmp;
+mod finite_ops;
 mod number;
 mod sign;
 
-pub use float_number::TryFromStringError;
+pub use finite::TryFromStrError;
 pub use number::Number;
 
-pub struct NumberContext<const RADIX: u32, const PRECISION: usize>();
+pub type Dec64 = number::Number<10, 64>;
 
-impl<'f, const RADIX: u32, const PRECISION: usize> NumberContext<RADIX, PRECISION> {
-    pub fn from_string(
-        &self,
-        src: String,
-    ) -> Result<Number<'f, RADIX, PRECISION>, TryFromStringError> {
-        match Number::try_from(src) {
-            Err(e) => Err(e as TryFromStringError),
-            Ok(n) => Ok(n as Number<RADIX, PRECISION>),
-        }
-    }
+impl Dec64 {
+    pub const INFINITY: number::Number<10, 64> = Self {
+        kind: number::NumberKind::Inf,
+    };
 
-    pub fn from_str(
-        &self,
-        src: &str,
-    ) -> Result<Number<'f, RADIX, PRECISION>, TryFromStringError> {
-        match Number::try_from(src) {
-            Err(e) => Err(e as TryFromStringError),
-            Ok(n) => Ok(n as Number<RADIX, PRECISION>),
-        }
-    }
+    pub const NEG_INFINITY: number::Number<10, 64> = Self {
+        kind: number::NumberKind::NegInf,
+    };
 
-    pub fn pos_inf(&self) -> Number<'f, RADIX, PRECISION> {
-        Number::pos_inf()
-    }
-
-    pub fn neg_inf(&self) -> Number<'f, RADIX, PRECISION> {
-        Number::neg_inf()
-    }
-
-    pub fn nan(&self) -> Number<'f, RADIX, PRECISION> {
-        Number::nan()
-    }
+    pub const NAN: number::Number<10, 64> = Self {
+        kind: number::NumberKind::NaN,
+    };
 }

@@ -6,6 +6,15 @@ pub enum Sign {
     Pos,
 }
 
+impl Sign {
+    pub fn reverse(self) -> Self {
+        match self {
+            Self::Pos => Self::Neg,
+            Self::Neg => Self::Pos,
+        }
+    }
+}
+
 impl PartialEq for Sign {
     fn eq(&self, rhs: &Self) -> bool {
         matches!(self.cmp(rhs), Ordering::Equal)
