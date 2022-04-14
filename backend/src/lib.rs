@@ -4,15 +4,15 @@ use ast::node::{AstNode, BinOpKind, BinOpNode, NumNode, UnOpKind, UnOpNode};
 use ast::span::Span;
 use constants::{
     ERR__UNDEFINED_LEFT_OPERAND, ERR__UNDEFINED_OPERAND, ERR__UNDEFINED_RIGHT_OPERAND,
-    ERR__UNKNOWN_ERROR_UNDEFINED_RESULT, WARN__NAN_VALUE,
+    ERR__UNKNOWN_ERROR_UNDEFINED_RESULT, WARN__NAN_VALUE, ERR__INVALID_NUMBER_VALUE
 };
 use notification::Notification;
-use number::Number;
+use number::Dec64;
 
 pub struct Backend {
     expr: String,
     node_stack: Vec<Box<AstNode>>,
-    number_stack: Vec<Number>,
+    number_stack: Vec<Dec64>,
     curr_node: Option<Box<AstNode>>,
     last_visited_node: Option<Box<AstNode>>,
     notifications: Vec<Notification>,
@@ -53,14 +53,14 @@ impl Backend {
             Some(number) => number,
             None => {
                 self.push_error(ERR__UNDEFINED_RIGHT_OPERAND, bin_op_node.span());
-                Number::get_nan()
+                Dec64::NAN
             }
         };
         let left_operand = match self.number_stack.pop() {
             Some(number) => number,
             None => {
                 self.push_error(ERR__UNDEFINED_LEFT_OPERAND, bin_op_node.span());
-                Number::get_nan()
+                Dec64::NAN
             }
         };
 
@@ -83,7 +83,7 @@ impl Backend {
             Some(number) => number,
             None => {
                 self.push_warn(ERR__UNDEFINED_OPERAND, un_op_node.span());
-                Number::get_nan()
+                Dec64::NAN
             }
         };
 
@@ -99,16 +99,13 @@ impl Backend {
     }
 
     fn visit_num(&mut self, num_node: NumNode) {
-        let number = Number::from_number_node(num_node.clone());
-
-        if number.is_nan() {
-            self.push_warn(WARN__NAN_VALUE, num_node.span());
+        match Dec64::try_from(num_node.val()) {
+            Ok(number) => self.number_stack.push(number),
+            Err(_) => self.push_error(ERR__INVALID_NUMBER_VALUE, num_node.span()),
         }
-
-        self.number_stack.push(number);
     }
 
-    pub fn traverse_ast(mut self) -> (Number, Vec<Notification>) {
+    pub fn traverse_ast(mut self) -> (Dec64, Vec<Notification>) {
         loop {
             if let Some(curr_node) = self.curr_node {
                 self.node_stack.push(curr_node.clone());
@@ -159,7 +156,7 @@ impl Backend {
                     ERR__UNKNOWN_ERROR_UNDEFINED_RESULT,
                     Span::new(0, self.expr.len()),
                 );
-                Number::get_nan()
+                Dec64::NAN
             }
             Some(number) => number,
         };

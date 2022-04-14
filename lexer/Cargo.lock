@@ -17,10 +17,3 @@ dependencies = [
 [[package]]
 name = "number"
 version = "0.1.0"
-
-[[package]]
-name = "term_math"
-version = "0.1.0"
-dependencies = [
- "lexer",
-]

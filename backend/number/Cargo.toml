@@ -6,7 +6,3 @@ edition = "2021"
 [lib]
 name = "number"
 path = "src/lib.rs"
-
-[dependencies]
-ast = { path = "../../ast" }
-real_number = { path = "real_number" }

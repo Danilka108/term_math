@@ -1,8 +1,15 @@
+use lexer::Lexer;
+
+fn main() {
+    //let a = Lexer::new("12 +4/log2(e, 0.3242)").tokenize();
+    let a = Lexer::new("12 +4/1lo g2 (e, 0.32.43)").tokenize();
+    dbg!(a.collect::<Vec<_>>());
+}
+/*
 use ast::node::AstNode;
 use backend::Backend;
 use frontend::Frontend;
 use notification::Notification;
-use number_2::{Dec64, TryFromStrError};
 
 fn build_ast_from_user_input() -> Result<Box<AstNode>, Notification> {
     Ok(Frontend::from_user_input()?.build_ast()?)
@@ -12,13 +19,20 @@ fn build_ast_from_str(expr: &str) -> Result<Box<AstNode>, Notification> {
     Ok(Frontend::from_str(expr).build_ast()?)
 }
 
-fn main() -> Result<(), TryFromStrError> {
+fn main() {
+    let expr = "3 + 2 * 4";
+    let (num, notifications) = match build_ast_from_str(expr) {
+        Ok(ast) => {
+            dbg!(ast.clone());
+            Backend::new(expr, ast).traverse_ast()
+        },
+        Err(err) => {
+            dbg!(err);
+            return;
+        } 
+    };
 
-    let a = Dec64::try_from("1111")?;
-    let b = Dec64::try_from("3")?;
-
-    dbg!((a / b).to_string());
-    dbg!((1111_f64 / 3_f64).to_string());
-
-    Ok(())
+    dbg!(num.to_string());
+    dbg!(notifications);
 }
+*/

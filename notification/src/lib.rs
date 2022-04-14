@@ -1,10 +1,12 @@
 use colored::*;
 
+#[derive(Debug, Clone)]
 enum NotificationKind {
     Warn,
     Err,
 }
 
+#[derive(Debug, Clone)]
 pub struct Notification {
     input_expr: String,
     msg: String,
