@@ -54,7 +54,7 @@ impl<'c> Cursor<'c> {
         Span::new(self.pos(), self.pos() + self.chars.clone().count())
     }
 
-    fn eat_span(&mut self, span: &Span) {
+    pub fn eat_span(&mut self, span: &Span) {
         while self.offset < span.end() {
             self.bump();
         }

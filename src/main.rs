@@ -2,7 +2,7 @@ use lexer::Lexer;
 
 fn main() {
     //let a = Lexer::new("12 +4/log2(e, 0.3242)").tokenize();
-    let a = Lexer::new("12 +4/1lo g2 (e, 0.32.43)").tokenize();
+    let a = Lexer::new("12 +4/1lo@#?_!*234?|~) g2 (e, 0.3F2.43)").tokenize();
     dbg!(a.collect::<Vec<_>>());
 }
 /*

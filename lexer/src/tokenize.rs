@@ -4,6 +4,7 @@ use ast::span::Span;
 
 const ERR__UNKNOWN_SYMBOLS: &str = "Unknown symbols";
 
+#[derive(Debug, Clone)]
 pub struct Lexer<'a> {
     unknown_token_span: Span,
     cursor: Cursor<'a>,
@@ -55,11 +56,12 @@ fn consume_delim<'c>(cursor: Cursor<'c>) -> Option<Token<'c>> {
 }
 
 fn consume_number<'c>(cursor: Cursor<'c>) -> Option<Token<'c>> {
-    let is_digit = |chr: char| chr.is_digit(10) || chr == '.';
+    let is_number_start = |chr: char| chr.is_digit(10);
+    let is_number_tail = |chr: char| chr.is_digit(10) || chr.is_ascii_alphabetic() || chr == '.';
 
     cursor
-        .attempt_next(is_digit)
-        .consume_while(is_digit)
+        .attempt_next(is_number_start)
+        .consume_while(is_number_tail)
         .map_to_token(num_from_str)
 }
 
@@ -85,20 +87,25 @@ impl<'s> Lexer<'s> {
         }
     }
 
-    fn push_unknown_token(&mut self) {
-        if self.unknown_token_span.start() > self.unknown_token_span.end() {
-            let kind = TokenKind::Err(ERR__UNKNOWN_SYMBOLS.to_string());
-            self.tokens
-                .push(Token::new(kind, self.unknown_token_span.clone()));
-            self.unknown_token_span = Span::new(self.cursor.pos(), self.cursor.pos());
-        }
+    fn increment_unknown_token_span(&mut self) {
+        let start = self.unknown_token_span.start();
+        let end = self.unknown_token_span.end() + 1;
+        self.unknown_token_span = Span::new(start, end);
+        self.cursor.eat_span(&self.unknown_token_span);
     }
 
-    fn increment_unknown_token_span(&mut self) {
-        self.unknown_token_span = Span::new(
-            self.unknown_token_span.start(),
-            self.unknown_token_span.end() + 1,
-        );
+    fn push_unknown_token(&mut self) {
+        if self.unknown_token_span.start() == self.unknown_token_span.end() {
+            return;
+        }
+
+        let kind = TokenKind::Err(ERR__UNKNOWN_SYMBOLS.to_string());
+        self.tokens
+            .push(Token::new(kind, self.unknown_token_span.clone()));
+    }
+
+    fn reset_unknown_token_span(&mut self) {
+        self.unknown_token_span = Span::new(self.cursor.pos(), self.cursor.pos());
     }
 
     fn push_eof_token(&mut self) {
@@ -106,7 +113,14 @@ impl<'s> Lexer<'s> {
         self.tokens.push(Token::new(TokenKind::Eof, span));
     }
 
+    fn push_token(&mut self, token: Token<'s>) {
+        self.cursor.eat_token(&token);
+        self.tokens.push(token);
+    }
+
     fn consume_token(&mut self) {
+        let _ = self.cursor.eat_while(is_whitespace);
+
         let consumed_token = Self::CONSUMERS
             .iter()
             .find_map(|consume| consume(self.cursor.clone()));
@@ -119,14 +133,14 @@ impl<'s> Lexer<'s> {
         };
 
         self.push_unknown_token();
-        self.cursor.eat_token(&token);
-        self.tokens.push(token);
+        self.push_token(token);
+
+        self.reset_unknown_token_span();
     }
 
     pub fn tokenize(mut self) -> impl Iterator<Item = Token<'s>> {
         while !self.cursor.is_eof() {
             self.consume_token();
-            self.cursor.eat_while(is_whitespace);
         }
 
         self.push_eof_token();

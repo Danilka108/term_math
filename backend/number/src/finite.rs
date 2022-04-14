@@ -12,7 +12,7 @@ pub struct FiniteOverflow {
 pub enum TryFromStrError<const RADIX: u32, const PREC: isize> {
     Empty,
     TooLong,
-    InvalidRadix,
+    InadmissableRadix,
     InvalidDigit,
     InvalidPrecision,
     SeveralPoints,
@@ -31,8 +31,8 @@ impl<const RADIX: u32, const PREC: isize> ToString for TryFromStrError<RADIX, PR
         match self {
             Self::Empty => format!("Empty"),
             Self::TooLong => format!("too long"),
-            Self::InvalidRadix => format!("invalid radix, used radix - {}", RADIX),
-            Self::InvalidDigit => format!("invalid digit"),
+            Self::InadmissableRadix => format!("inadmissable radix, used radix - {}", RADIX),
+            Self::InvalidDigit => format!("invalid digit, maybe invalid digit radix"),
             Self::InvalidPrecision => {
                 format!("invalid precision, max precision - {}", PREC)
             }
@@ -108,7 +108,7 @@ impl<const RADIX: u32, const PREC: isize> TryFrom<&str> for Finite<RADIX, PREC> 
 
     fn try_from(src: &str) -> Result<Self, Self::Error> {
         if RADIX < 2 || RADIX > 36 {
-            return Err(TryFromStrError::<RADIX, PREC>::InvalidRadix);
+            return Err(TryFromStrError::<RADIX, PREC>::InadmissableRadix);
         }
 
         if PREC <= 0 || PREC > MAX_PREC {
