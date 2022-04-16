@@ -3,15 +3,17 @@
 version = 3
 
 [[package]]
-name = "ast"
+name = "ir"
 version = "0.1.0"
+dependencies = [
+ "number",
+]
 
 [[package]]
 name = "lexer"
 version = "0.1.0"
 dependencies = [
- "ast",
- "number",
+ "ir",
 ]
 
 [[package]]
@@ -22,5 +24,6 @@ version = "0.1.0"
 name = "term_math"
 version = "0.1.0"
 dependencies = [
+ "ir",
  "lexer",
 ]

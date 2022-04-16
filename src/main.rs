@@ -1,9 +1,10 @@
-use lexer::Lexer;
+use ir::attempt::*;
 
-fn main() {
+fn main() -> Result<(), String> {
     //let a = Lexer::new("12 +4/log2(e, 0.3242)").tokenize();
-    let a = Lexer::new("12 +4/1lo@#?_!*234?|~) g2 (e, 0.3F2.43)").tokenize();
-    dbg!(a.collect::<Vec<_>>());
+    //let ll_stream = ll_lexer::tokenize("12 +4/1lo@#?_!*234?|~) g2 (e, 0.3F2.43)");
+    //let stream = lexer::tokenize("12");
+    Ok(())
 }
 /*
 use ast::node::AstNode;

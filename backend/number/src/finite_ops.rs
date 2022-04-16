@@ -3,17 +3,6 @@ use crate::finite::{Finite, FiniteOverflow};
 use crate::sign::Sign;
 use std::cmp::Ordering;
 
-fn check_to_overflow_with_sign<const RADIX: u32, const PREC: isize>(
-    num: &Finite<RADIX, PREC>,
-    sign: &Sign,
-) -> Result<(), FiniteOverflow> {
-    match num.len().checked_add(1) {
-        None => Err(FiniteOverflow { sign: sign.clone() }),
-        Some(len) if len > PREC => Err(FiniteOverflow { sign: sign.clone() }),
-        Some(_) => Ok(()),
-    }
-}
-
 fn check_to_overflow<const RADIX: u32, const PREC: isize>(
     num: &Finite<RADIX, PREC>,
 ) -> Result<(), FiniteOverflow> {

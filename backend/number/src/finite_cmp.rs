@@ -22,6 +22,7 @@ pub fn unsigned_finite_cmp<const RADIX: u32, const PREC: isize>(
 
     Ordering::Equal
 }
+
 pub fn is_unsigned_finite_eq<const RADIX: u32, const PREC: isize>(
     lhs: &Finite<RADIX, PREC>,
     rhs: &Finite<RADIX, PREC>,
