@@ -407,7 +407,7 @@ impl Parser {
         }
 
         self.collect_ops()?;
-        
+
         match self.buffer.last_mut() {
             Some(elem) => match elem.mut_borrow_val() {
                 BuffElem::Fn(_, count) => *count += 1,
@@ -438,7 +438,7 @@ impl Parser {
         span: Span,
     ) -> Result<(), SpanWrapper<String>> {
         let mut args = Vec::new();
-        
+
         for _ in 0..args_count {
             let arg = match self.nodes.pop() {
                 Some(node) => node,
@@ -533,7 +533,6 @@ impl Parser {
             _ => (),
         }
 
-        dbg!(self.clone());
         let ast = match self.nodes.pop() {
             Some(node) if self.nodes.len() == 0 => Box::new(node),
             _ => {

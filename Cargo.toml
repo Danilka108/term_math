@@ -5,7 +5,5 @@ edition = "2021"
 
 [dependencies]
 parse = { path = "parse" }
-# notification = { path = "notification" }
-# ast = { path = "ast" }
-# frontend = { path = "frontend" }
-# backend = { path = "backend" }
+ir = {path = "ir" }
+notification = { path = "notification" }

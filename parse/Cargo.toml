@@ -8,6 +8,4 @@ name = "parse"
 path = "src/lib.rs"
 
 [dependencies]
-number = { path = "../number" }
 ir = { path = "../ir" }
-util = { path = "../util" }

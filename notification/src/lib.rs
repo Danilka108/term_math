@@ -102,7 +102,7 @@ impl std::fmt::Display for Notification {
             NotificationKind::Warn => "Warning:".red().yellow(),
         };
 
-        writeln!(f, "{} {}.", message_prefix, self.msg.bold())?;
+        writeln!(f, "{} {}", message_prefix, self.msg.bold())?;
         writeln!(f, "{}", "|".blue().bold())?;
 
         for (expr, underline) in output_expr {
