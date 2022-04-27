@@ -1,11 +1,11 @@
 [package]
-name = "ir"
+name = "util"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "ir"
+name = "util"
 path = "src/lib.rs"
 
 [dependencies]
-number = { path = "../number" }
+ir = { path = "../ir" }

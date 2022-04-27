@@ -1,8 +1,4 @@
-use crate::span::SpanWrapper;
-use crate::cursor::{Cursor, FromCursor, IntoCursor};
-use std::str::Chars;
-
-const EOF_CHAR: char = '\0';
+use crate::span::{SharedSpanWrapper, SpanWrapper};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LitKind {
@@ -29,64 +25,23 @@ pub enum Token {
     Num(String),
     Whitespace,
     Unknown,
+    Eof,
 }
 
 pub type TokenStream = std::vec::IntoIter<SpanWrapper<Token>>;
 
-#[derive(Debug, Clone)]
-pub struct StringCursor<'c> {
-    curr: char,
-    chars: Chars<'c>,
-    offset: usize,
+pub trait ToShared<'t> {
+    fn to_shared_stream(&'t self) -> SharedTokenStream<'t>;
 }
 
-impl<'c> Cursor<Token> for StringCursor<'c> {
-    type Item = char;
-
-    fn bump(&mut self) -> Option<Self::Item> {
-        let next_char = self.chars.next();
-
-        self.offset += 1;
-        self.curr = next_char.unwrap_or(EOF_CHAR);
-
-        next_char
-    }
-
-    fn curr(&self) -> Self::Item {
-        self.curr
-    }
-
-    fn start(&self) -> usize {
-        self.offset
-    }
-
-    fn end(&self) -> usize {
-        self.offset + self.chars.clone().count()
+impl<'t> ToShared<'t> for TokenStream {
+    fn to_shared_stream(&'t self) -> SharedTokenStream<'t> {
+        self.as_slice()
+            .into_iter()
+            .map(|w| SharedSpanWrapper::from(w))
+            .collect::<Vec<_>>()
+            .into_iter()
     }
 }
 
-impl<'c> IntoCursor<Token> for &'c str {
-    type Item = char;
-    type IntoCursor = StringCursor<'c>;
-
-    fn into_cursor(self) -> Self::IntoCursor {
-        StringCursor {
-            chars: self.chars(),
-            offset: 0,
-            curr: EOF_CHAR,
-        }
-    }
-}
-
-impl<'c> FromCursor<Token, char> for String {
-    fn from_cursor<C: IntoCursor<Token, Item = char>>(c: C) -> Self {
-        let mut val = String::new();
-        let mut cursor = c.into_cursor();
-
-        while let Some(chr) = cursor.bump() {
-            val.push(chr);
-        }
-
-        val
-    }
-}
+pub type SharedTokenStream<'t> = std::vec::IntoIter<SpanWrapper<&'t Token>>;

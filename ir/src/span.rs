@@ -19,28 +19,90 @@ impl Span {
         self.end
     }
 
-    pub fn concat(&self, other: &Self) -> Self {
-        Self::new(self.start, other.end)
+    pub fn decrement_start(mut self) -> Self {
+        self.start = self.start.checked_sub(1).unwrap_or(0);
+        self
+    }
+
+    pub fn increment_end(mut self) -> Self {
+        self.end += 1;
+        self
+    }
+
+    pub fn len(&self) -> usize {
+        self.end - self.start
+    }
+}
+
+pub trait ConcatSpan {
+    fn concat_span(self) -> Span;
+}
+
+impl ConcatSpan for [&Span; 2] {
+    fn concat_span(self) -> Span {
+        let start = self[0].start().min(self[1].start());
+        let end = self[0].end().max(self[1].end());
+        Span::new(start, end)
+    }
+}
+
+impl ConcatSpan for [Span; 2] {
+    fn concat_span(self) -> Span {
+        let start = self[0].start().min(self[1].start());
+        let end = self[0].end().max(self[1].end());
+        Span::new(start, end)
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct SpanWrapper<V>(V, Span) where V: Debug + Clone;
+pub struct SpanWrapper<V: Debug + Clone>(V, Span);
 
-impl<V> SpanWrapper<V> where V: Debug + Clone {
+pub type SharedSpanWrapper<'v, V> = SpanWrapper<&'v V>;
+
+impl<'v, V: Debug + Clone> From<&'v SpanWrapper<V>> for SharedSpanWrapper<'v, V> {
+    fn from(wrapper: &'v SpanWrapper<V>) -> Self {
+        SpanWrapper::new(wrapper.borrow_val(), wrapper.borrow_span().clone())
+    }
+}
+
+impl<V> SpanWrapper<V>
+where
+    V: Debug + Clone,
+{
     pub fn new(val: V, span: Span) -> Self {
         Self(val, span)
     }
 
-    pub fn borrow_val(&self) -> &V {
-        &self.0
+    pub fn to_tuple(self) -> (V, Span) {
+        (self.0, self.1)
+    }
+
+    pub fn map<N: Clone + Debug, FN: FnMut(V) -> N>(self, mut f: FN) -> SpanWrapper<N> {
+        let SpanWrapper (val, span) = self;
+        SpanWrapper(f(val), span)
     }
 
     pub fn val(self) -> V {
         self.0
     }
 
-    pub fn span(&self) -> &Span {
+    pub fn borrow_val(&self) -> &V {
+        &self.0
+    }
+
+    pub fn mut_borrow_val(&mut self) -> &mut V {
+        &mut self.0
+    }
+
+    pub fn span(self) -> Span {
+        self.1
+    }
+
+    pub fn borrow_span(&self) -> &Span {
         &self.1
+    }
+
+    pub fn mut_borrow_span(&mut self) -> &mut Span {
+        &mut self.1
     }
 }

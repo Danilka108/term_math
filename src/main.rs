@@ -1,10 +1,13 @@
-use ir::attempt::*;
+use parse::parse;
 
-fn main() -> Result<(), String> {
+fn main() {
+    let expr = "((- (2 + (0 + 0))) - 4) + 5 + (1 - 324 + (-3223 / 1 * 914 - (111 / 2 /355 * (3 + 4))))";
+    //let expr = "fn(23 * (324 -2) + 3, 2, 352)";
+    let ast = parse(expr);
+    dbg!(ast);
     //let a = Lexer::new("12 +4/log2(e, 0.3242)").tokenize();
     //let ll_stream = ll_lexer::tokenize("12 +4/1lo@#?_!*234?|~) g2 (e, 0.3F2.43)");
     //let stream = lexer::tokenize("12");
-    Ok(())
 }
 /*
 use ast::node::AstNode;
@@ -30,7 +33,7 @@ fn main() {
         Err(err) => {
             dbg!(err);
             return;
-        } 
+        }
     };
 
     dbg!(num.to_string());

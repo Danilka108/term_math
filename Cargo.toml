@@ -4,8 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ir = { path = "ir"}
-lexer = { path = "lexer" }
+parse = { path = "parse" }
 # notification = { path = "notification" }
 # ast = { path = "ast" }
 # frontend = { path = "frontend" }

@@ -10,20 +10,28 @@ dependencies = [
 ]
 
 [[package]]
-name = "lexer"
+name = "number"
+version = "0.1.0"
+
+[[package]]
+name = "parse"
 version = "0.1.0"
 dependencies = [
  "ir",
+ "number",
+ "util",
 ]
-
-[[package]]
-name = "number"
-version = "0.1.0"
 
 [[package]]
 name = "term_math"
 version = "0.1.0"
 dependencies = [
+ "parse",
+]
+
+[[package]]
+name = "util"
+version = "0.1.0"
+dependencies = [
  "ir",
- "lexer",
 ]
