@@ -77,6 +77,14 @@ where
         (self.0, self.1)
     }
 
+    pub fn mut_borrow_to_tuple(&mut self) -> (&mut V, &mut Span) {
+        (&mut self.0, &mut self.1)
+    }
+
+    pub fn borrow_to_tuple(&self) -> (&V, &Span) {
+        (&self.0, &self.1)
+    }
+
     pub fn map<N: Clone + Debug, FN: FnMut(V) -> N>(self, mut f: FN) -> SpanWrapper<N> {
         let SpanWrapper (val, span) = self;
         SpanWrapper(f(val), span)

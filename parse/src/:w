@@ -5,6 +5,26 @@ use ir::token::*;
 
 use std::fmt::Debug;
 
+/*
+        match self.second().to_tuple() {
+            (Token::Lit(LitKind::Comma) | Token::CloseDelim(DelimKind::Paren), span) => {
+                return Err(SpanWrapper::new(
+                    ERR__EMPTY_ARG.to_owned(),
+                    [separator_span.clone(), span].concat_span(),
+                ))
+            }
+            _ => (),
+        }
+*/
+
+macro_rules! matches_or {
+    ($expr:expr, $pat:pat, $msg:expr, $span:expr) => {
+        match $expr {
+            $pat => return Err(SpanWrapper::new($msg.to_owned(), $span)),
+        }
+    };
+}
+
 #[derive(Clone, Debug)]
 pub enum BuffElem {
     BinOp(BinOpKind),
@@ -25,13 +45,6 @@ pub struct Parser {
 pub type PResult<O = ()> = Result<O, SpanWrapper<String>>;
 
 impl Parser {
-    const PARSERS: [fn(&mut Self) -> Result<(), SpanWrapper<String>>; 4] = [
-        Self::parse_fn,
-        Self::parse_delimited,
-        Self::parse_num,
-        Self::parse_op,
-    ];
-
     pub fn new(token_stream: TokenStream) -> Self {
         let expr_len = match token_stream
             .clone()
@@ -113,10 +126,6 @@ impl Parser {
         }
     }
 
-    pub(crate) fn mut_last_buff_tuple(&mut self) -> Option<(&mut BuffElem, &mut Span)> {
-        self.buffer.last_mut().map(|t| t.mut_borrow_to_tuple())
-    }
-
     pub(crate) fn new_err<R>(msg: &str, span: Span) -> Result<R, SpanWrapper<String>> {
         Err(SpanWrapper::new(msg.to_owned(), span))
     }
@@ -180,6 +189,14 @@ impl Parser {
         Ok(ast)
     }
 
+    const PARSERS: [fn(&mut Self) -> Result<(), SpanWrapper<String>>; 5] = [
+        Self::parse_unknown,
+        Self::parse_fn,
+        Self::parse_delimited,
+        Self::parse_num,
+        Self::parse_op,
+    ];
+
     pub fn build_ast(mut self) -> Result<Box<SpanWrapper<Node>>, SpanWrapper<String>> {
         self.filter_whitespaces();
 
@@ -188,8 +205,6 @@ impl Parser {
         }
 
         while !self.is_eof() {
-            self.parse_unknown()?;
-
             for parse in Self::PARSERS {
                 parse(&mut self)?;
             }
