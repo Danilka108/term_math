@@ -1,15 +1,3 @@
-/*
-        match self.second().to_tuple() {
-            (Token::Lit(LitKind::Comma) | Token::CloseDelim(DelimKind::Paren), span) => {
-                return Err(SpanWrapper::new(
-                    ERR__EMPTY_ARG.to_owned(),
-                    [separator_span.clone(), span].concat_span(),
-                ))
-            }
-            _ => (),
-        }
-*/
-
 macro_rules! matches_or {
     ($expr:expr, $(|)? $($pattern:pat_param)|+ $(if $guard:expr)? $(,)?, $msg:expr, $span:expr $(,)?) => {
         match $expr {
@@ -29,19 +17,26 @@ macro_rules! matches_or_else {
 }
 
 
-
-
 mod errors;
 mod lexer;
 mod parser;
 mod parsers;
+mod tokenizer;
 
 use ir::ast::Node;
 use ir::span::SpanWrapper;
 use lexer::Lexer;
 use parser::Parser;
 
-pub fn parse(expr: String) -> Result<Box<SpanWrapper<Node>>, SpanWrapper<String>> {
-    let token_stream = Lexer::new(expr.as_str()).tokenize();
-    Parser::new(token_stream).build_ast()
+pub fn parse(expr: &'static str) -> Result<Box<SpanWrapper<Node>>, SpanWrapper<String>> {
+    Ok(Box::new(SpanWrapper::new(Node::Num(String::from("sdf")), ir::span::Span::new(0, 0))))
 }
+
+use std::fmt::Debug;
+trait Tokenizer<T: Clone + Debug> {
+    fn curr(&self) -> SpanWrapper<T>;
+    fn first(&self) -> SpanWrapper<T>;
+    fn second(&self) -> SpanWrapper<T>;
+    fn bump(&mut self);
+}
+

@@ -7,3 +7,4 @@ edition = "2021"
 parse = { path = "parse" }
 ir = {path = "ir" }
 notification = { path = "notification" }
+interpreter = { path = "interpreter" }

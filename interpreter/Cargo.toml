@@ -1,0 +1,12 @@
+[package]
+name = "interpreter"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "interpreter"
+path = "src/lib.rs"
+
+[dependencies]
+ir = { path = "../ir" }
+number = { path = "../number" }

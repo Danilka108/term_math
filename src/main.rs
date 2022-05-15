@@ -1,8 +1,11 @@
-use parse::parse;
 use notification::Notification;
 use ir::span::SpanWrapper;
+use interpreter;
+use parse::parse;
 
 fn main() {
+    dbg!(parse("11+342+4"));
+    /*
     let expr = String::from("((- (2 + (0 + 0))) - 4) + 5 + (1 - 324 + fn(-3223 / 1 * 914 - (111  2 /355 * (3 + 4))))");
     let ast = parse(expr.clone());
 
@@ -16,4 +19,5 @@ fn main() {
             print!("{}", err);
         } 
     }
+    */
 }

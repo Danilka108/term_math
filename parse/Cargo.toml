@@ -9,3 +9,4 @@ path = "src/lib.rs"
 
 [dependencies]
 ir = { path = "../ir" }
+parse_test = { path = "parse_test" }

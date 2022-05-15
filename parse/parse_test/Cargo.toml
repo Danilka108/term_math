@@ -1,0 +1,12 @@
+[package]
+name = "parse_test"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "parse_test"
+path = "src/lib.rs"
+
+[dependencies]
+ir = { path = "../../ir" }
+parse_util = { path = "../parse_util" }
